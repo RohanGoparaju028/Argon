@@ -1,0 +1,2 @@
+#pragma once
+namespace argon { inline constexpr const char* runtime_source = R"ARGON_RUNTIME(@ARGON_RUNTIME@)ARGON_RUNTIME"; }

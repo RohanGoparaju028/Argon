@@ -1,0 +1,48 @@
+struct Point {
+    x: i32;
+    y: i32;
+}
+
+enum Result {
+    Ok(value: i32),
+    Err(message: string),
+}
+
+fn factorial(n: i64) -> i64 {
+    if (n <= 1) { return 1; }
+    return n * factorial(n - 1);
+}
+
+test {
+    let n = 6;
+    const computed: i64 = factorial(n);
+    assert(computed == 720);
+}
+
+fn describe(result: Result) -> string {
+    return match result {
+        Result::Ok(value) => "value: " + str(value),
+        Result::Err(message) => "error: " + message,
+    };
+}
+
+fn main() -> i32 {
+    println(computed);
+    let point = Point(3, 4);
+    let copy = point;
+    copy.x = 9;
+    assert(point.x == 3);
+
+    let values = Array<i32>();
+    for (let i = 0; i < 3; i++) {
+        values.push(i * 2);
+    }
+    values[1] += 40;
+    println(describe(Result::Ok(values[1])));
+
+    switch (point.y) {
+        case 4: println("four"); break;
+        default: println("other");
+    }
+    return 0;
+}

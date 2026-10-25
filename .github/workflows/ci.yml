@@ -1,0 +1,54 @@
+name: Argon C++ compiler
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            shell: bash
+          - os: macos-latest
+            shell: bash
+          - os: windows-2022
+            shell: msys2 {0}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4
+      - if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          path-type: inherit
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build compiler
+        run: cmake --build build --parallel 2
+      - name: Test language, C++ bindings, and project workflow
+        env:
+          ARGON_CXX: ${{ runner.os == 'Windows' && 'g++' || '' }}
+        run: ctest --test-dir build --output-on-failure
+      - name: Compiler version
+        run: ./build/argonc --version
+      - name: Package VS Code extension
+        run: node editors/vscode/scripts/package.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: argon-vscode-${{ runner.os }}
+          path: editors/vscode/*.vsix

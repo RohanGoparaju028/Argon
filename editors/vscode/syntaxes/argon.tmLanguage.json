@@ -1,0 +1,17 @@
+{
+  "name": "Argon",
+  "scopeName": "source.argon",
+  "patterns": [
+    {"name": "comment.line.double-slash.argon", "begin": "//", "end": "$"},
+    {"name": "comment.block.argon", "begin": "/\\*", "end": "\\*/"},
+    {"name": "string.quoted.double.argon", "begin": "\"", "end": "\"", "patterns": [{"name": "constant.character.escape.argon", "match": "\\\\."}]},
+    {"name": "keyword.control.argon", "match": "\\b(test|match|switch|case|default|if|else|while|for|in|break|continue|return|unsafe)\\b"},
+    {"name": "storage.modifier.argon", "match": "\\b(pub|priv|extern|cpp|const|let|import)\\b"},
+    {"name": "storage.type.argon", "match": "\\b(fn|struct|class|enum|i32|i64|f64|bool|string|void)\\b"},
+    {"name": "support.type.argon", "match": "\\b(Ptr|Weak|Array|LinkedList|Deque|Stack|Queue|HashMap|HashSet)\\b"},
+    {"name": "constant.language.argon", "match": "\\b(true|false)\\b"},
+    {"name": "constant.numeric.argon", "match": "\\b[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?(?:i32|i64|f64)?\\b"},
+    {"name": "support.function.argon", "match": "\\b(print|println|read_line|assert|str|length|weak|upgrade|is_empty|is_expired|strong_count)\\b"},
+    {"name": "entity.name.function.argon", "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()"}
+  ]
+}

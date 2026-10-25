@@ -1,0 +1,8 @@
+/build/
+/build-*/
+/.build/
+.argon/
+*.swp
+.DS_Store
+
+/editors/vscode/*.vsix

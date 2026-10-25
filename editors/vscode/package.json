@@ -1,0 +1,38 @@
+{
+  "name": "argon-language",
+  "displayName": "Argon",
+  "description": "Argon syntax, project and file runners, checks, and native debugging through CodeLLDB.",
+  "version": "0.1.0",
+  "publisher": "argon-local",
+  "engines": {"vscode": "^1.85.0"},
+  "categories": ["Programming Languages", "Debuggers"],
+  "license": "Apache-2.0",
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:argon", "onCommand:argon.runFile", "onCommand:argon.debugFile", "onCommand:argon.runProject", "onCommand:argon.debugProject", "onDebugResolve:lldb"],
+  "extensionPack": ["vadimcn.vscode-lldb"],
+  "capabilities": {"untrustedWorkspaces": {"supported": "limited", "description": "Syntax highlighting is available; checks, builds, running and debugging require workspace trust."}},
+  "contributes": {
+    "languages": [{"id": "argon", "aliases": ["Argon", "argon"], "extensions": [".ar", ".fe"], "configuration": "./language-configuration.json"}],
+    "grammars": [{"language": "argon", "scopeName": "source.argon", "path": "./syntaxes/argon.tmLanguage.json"}],
+    "breakpoints": [{"language": "argon"}],
+    "problemMatchers": [{"name": "argon", "owner": "argon", "fileLocation": "absolute", "severity": "error", "pattern": {"regexp": "^argonc: (.*):(\\d+):(\\d+): (.*)$", "file": 1, "line": 2, "column": 3, "message": 4}}],
+    "commands": [
+      {"command": "argon.runFile", "title": "Argon: Run File", "icon": "$(play)"},
+      {"command": "argon.debugFile", "title": "Argon: Debug File", "icon": "$(debug-alt)"},
+      {"command": "argon.checkFile", "title": "Argon: Check File"},
+      {"command": "argon.runProject", "title": "Argon: Run Project"},
+      {"command": "argon.debugProject", "title": "Argon: Debug Project"},
+      {"command": "argon.buildProject", "title": "Argon: Build Project"}
+    ],
+    "menus": {"editor/title": [
+      {"command": "argon.runFile", "when": "editorLangId == argon && isWorkspaceTrusted", "group": "navigation"},
+      {"command": "argon.debugFile", "when": "editorLangId == argon && isWorkspaceTrusted", "group": "navigation"}
+    ]},
+    "configuration": {"title": "Argon", "properties": {
+      "argon.compilerPath": {"type": "string", "default": "", "description": "One argonc executable path. Otherwise search the workspace build directory, then PATH.", "scope": "resource"},
+      "argon.debugArgs": {"type": "array", "items": {"type": "string"}, "default": [], "description": "Arguments passed to the debugged executable.", "scope": "resource"}
+    }},
+    "keybindings": [{"command": "argon.debugFile", "key": "f5", "when": "editorLangId == argon && !inDebugMode && isWorkspaceTrusted"}]
+  },
+  "scripts": {"test": "node --test test/*.test.js", "package": "node scripts/package.js"}
+}

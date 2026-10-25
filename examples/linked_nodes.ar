@@ -1,0 +1,15 @@
+struct Node {
+    value: i32;
+    next: Ptr<Node>;
+}
+
+fn main() -> i32 {
+    let first = Ptr<Node>(Node(10, Ptr<Node>()));
+    first->next = Ptr<Node>(Node(20, Ptr<Node>()));
+    let cursor = first;
+    while (!is_empty(cursor)) {
+        println(cursor->value);
+        cursor = cursor->next;
+    }
+    return 0;
+}

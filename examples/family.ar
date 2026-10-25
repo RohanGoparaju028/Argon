@@ -1,0 +1,23 @@
+class Person {
+    name: string;
+    parent: Weak<Person>;
+    children: Array<Person>;
+}
+
+fn family() -> Weak<Person> {
+    let parent = Person("Ada", Weak<Person>(), Array<Person>());
+    let child = Person("Grace", weak(parent), Array<Person>());
+    parent.children.push(child);
+    // Parent owns the child; the child observes its parent without owning it.
+    let recovered_parent = upgrade(child.parent);
+    println(recovered_parent.name);
+    println(parent.children[0].name);
+    return weak(parent);
+}
+
+fn main() -> i32 {
+    let observer = family();
+    assert(is_expired(observer));
+    println("family released without a reference cycle");
+    return 0;
+}

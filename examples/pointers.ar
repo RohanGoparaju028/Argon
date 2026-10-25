@@ -1,0 +1,31 @@
+struct Point { x: i32; y: i32; }
+
+fn observe_temporary() -> Weak<i32> {
+    let temporary = Ptr<i32>(99);
+    return weak(temporary);
+}
+
+fn main() -> i32 {
+    let number = Ptr<i32>(40);
+    let alias = number;
+    assert(strong_count(number) == 2);
+    *alias += 2;
+    println(*number);
+
+    let point = Ptr<Point>(Point(3, 4));
+    point->x = 9;
+    println(point->x);
+
+    let observer = weak(number);
+    alias.reset();
+    assert(strong_count(number) == 1);
+    let recovered = upgrade(observer);
+    assert(!is_empty(recovered));
+    println(*recovered);
+
+    let expired = observe_temporary();
+    assert(is_expired(expired));
+    assert(is_empty(upgrade(expired)));
+    println("expired observer handled safely");
+    return 0;
+}

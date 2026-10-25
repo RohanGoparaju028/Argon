@@ -1,0 +1,37 @@
+fn main() -> i32 {
+    let scores = HashMap<string, i32>();
+    scores.set("Ada", 42);
+    scores.set("Grace", 99);
+    scores["Ada"] += 1;
+    println(scores.get("Ada"));
+    let names = scores.keys(); // Keys are sorted for deterministic traversal.
+    for (let i = 0; i < names.length(); i++) { println(names[i]); }
+
+    let tags = HashSet<string>();
+    assert(tags.insert("native"));
+    assert(!tags.insert("native"));
+    tags.insert("simple");
+    println(tags.length());
+
+    let list = LinkedList<i32>();
+    list.push(20);
+    list.push_front(10);
+    println(list.pop_front());
+
+    let stack = Stack<string>();
+    stack.push("first");
+    stack.push("last");
+    println(stack.pop());
+
+    let queue = Queue<string>();
+    queue.enqueue("first");
+    queue.enqueue("last");
+    println(queue.dequeue());
+
+    let deque = Deque<i32>();
+    deque.push(2);
+    deque.push_front(1);
+    println(deque.front());
+    println(deque.back());
+    return 0;
+}

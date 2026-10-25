@@ -1,0 +1,24 @@
+fn append(values: Array<i32>) {
+    values.push(42);
+}
+
+fn main() -> i32 {
+    let values = Array<i32>();
+    let alias = values;
+    assert(strong_count(values) == 2);
+    append(alias);
+    println(values[0]);
+
+    let independent = values.clone();
+    independent[0] = 7;
+    assert(values[0] == 42);
+    println(independent[0]);
+
+    let observer = weak(values);
+    alias.reset();
+    values.reset();
+    assert(is_expired(observer));
+    assert(is_empty(upgrade(observer)));
+    println("shared storage released");
+    return 0;
+}

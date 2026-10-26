@@ -1,6 +1,6 @@
 # Argon
 
-[Read the documentation](https://rohangoparaju028.github.io/Argon/) · [Getting started](docs/getting-started.md) · [Current status](docs/status.md)
+[Read the documentation](https://rohangoparaju028.github.io/Argon/) · [Implemented features](docs/features.md) · [Getting started](docs/getting-started.md) · [Current status](docs/status.md)
 
 **A small subset of c++ for projects that need C++  without necessarily need c++  files.**
 

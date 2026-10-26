@@ -13,7 +13,7 @@
     <a class="brand" href="{{ '/' | relative_url }}"><span class="symbol">Ar</span><span>Argon<small>Language documentation</small></span></a>
     <div class="version">0.1.0 <span>Experimental</span></div>
     <nav aria-label="Documentation">
-      {% assign paths = 'index.md,getting-started.md,language.md,memory.md,cpp.md,build.md,examples.md,vim.md,vscode.md,status.md' | split: ',' %}
+      {% assign paths = 'index.md,features.md,getting-started.md,language.md,memory.md,cpp.md,build.md,examples.md,vim.md,vscode.md,status.md' | split: ',' %}
       {% for path in paths %}
         {% assign item = site.pages | where: 'path', path | first %}
         {% if item %}<a href="{{ item.url | relative_url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a>{% endif %}

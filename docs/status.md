@@ -6,6 +6,8 @@ title: Current status
 
 This documentation describes **Argon 0.1.0**, reviewed on **26 October 2026**. It describes implemented behavior, not a promise of source compatibility or production readiness.
 
+See [what Argon supports today](features.md) for the complete feature inventory and usage examples.
+
 ## Implementation status
 
 | Feature | Status and boundary |

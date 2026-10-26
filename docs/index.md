@@ -10,6 +10,8 @@ Argon is an experimental programming language for small projects that need C++ l
 
 ## Start here
 
+See **[what Argon supports today](features.md)** for the full feature inventory.
+
 1. [Install the compiler and create a project](getting-started.md).
 2. [Learn the syntax](language.md), including private-by-default functions and `pub` exports.
 3. [Understand reference counting](memory.md), owning pointers, weak pointers, and collections.
@@ -39,16 +41,27 @@ cd hello
 argonc run
 ```
 
-## What Argon promises today
+## What the current language has
 
-| Area | Current behavior |
+**[Explore all implemented features, with runnable examples →](features.md)**
+
+| Area | Implemented in Argon 0.1.0 |
 | --- | --- |
-| Building | `argonc` creates projects, checks sources, invokes the native compiler, and links local C++ sources or installed libraries. |
-| Memory | Classes, owning pointers, and collections share reference-counted allocations. The final owner releases the object; weak links help avoid cycles. |
-| Checked operations | Integer overflow, numeric narrowing, invalid collection access, and empty pointer access produce errors. |
-| Metaprogramming | Global `test` blocks perform bounded scalar computations and generate constants. |
-| C++ bindings | Explicit functions with numeric/Boolean arguments and numeric/Boolean/void results. Calls require `unsafe`. |
-| Determinism | Compile-time evaluation is bounded and deterministic for the same inputs and target behavior. Runtime I/O and cross-platform floating-point results are outside that guarantee. |
+| Types and variables | `i32`, `i64`, `f64`, `bool`, `string`; mutable `let`, `const`, inferred local types, numeric casts |
+| Functions and modules | Typed `fn` declarations, recursion, explicit returns, pipelines, local imports, private-by-default declarations and `pub` exports |
+| Control flow | `if` / `else`, `while`, C-style `for`, `break`, `continue`, and non-fallthrough `switch` |
+| Pattern matching | Tagged enums with payloads and exhaustive `match` expressions |
+| User-defined data | Value structs and reference-counted classes |
+| Pointers and memory | Shared `Ptr<T>`, `Weak<T>`, checked dereferencing, weak upgrade, reset, and owner counts |
+| Collections | Arrays, linked lists, deques, stacks, queues, hash maps, and hash sets; shared storage and explicit cloning |
+| Metaprogramming | Global `test` blocks, scalar function evaluation, generated constants, and compile-time assertions |
+| Builtins | Console input/output, string conversion, length, assertions, numeric casts, and memory helpers |
+| Checked behavior | Integer overflow, narrowing, division, finite floating-point results, collection bounds, and empty pointer access |
+| C++ bindings | Explicit scalar function bindings with `extern cpp fn`, `unsafe` calls, native sources, and library linking |
+| Build system | Project scaffolding, checking, native compilation, running, debug builds, and C++ export through `argonc` |
+| Editors | Vim/Neovim and VS Code syntax highlighting, check/run/build commands, and native debugger integration |
+
+The [implemented-features guide](features.md) shows how to use each of these. The [current-status page](status.md) records their limits and what is still missing.
 
 Argon has its own syntax and a restricted set of capabilities. “Subset of C++” describes its intended scope and implementation relationship; an Argon source file is not valid C++ source. Arbitrary C++ headers and object APIs cannot be imported directly.
 

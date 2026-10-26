@@ -38,7 +38,8 @@ function! s:execute(args, target) abort
   let l:previous = getcwd()
   try
     execute 'lcd ' . fnameescape(a:target.cwd)
-    let l:out = system(join(map(copy(a:args), 'shellescape(v:val)'), ' '))
+    " Capture compiler diagnostics even when shellredir only captures stdout.
+    let l:out = system(join(map(copy(a:args), 'shellescape(v:val)'), ' ') . ' 2>&1')
     let l:status = v:shell_error
   finally
     execute 'lcd ' . fnameescape(l:previous)

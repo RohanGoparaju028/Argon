@@ -4,7 +4,7 @@ title: Overview
 
 # Small native projects. One command to build.
 
-Argon is an experimental programming language for small projects that need C++ libraries. It combines its own typed syntax, checked operations, reference-counted heap storage, and an integrated compiler and project builder: **`argonc`**. The compiler is written in C++17 and emits C++17 for a native compiler to build.
+Argon is an experimental programming language for small-to-medium projects that need C++ libraries without managing a separate C++ build system. It combines its own typed syntax, checked operations, reference-counted heap storage, and an integrated compiler and project builder: **`argonc`**. The compiler is written in C++17 and emits C++17 for a native compiler to build.
 
 **These docs describe version 0.1.0, the current prototype.** The language and tools are still evolving. Read the [current status and limitations](status.md) before choosing it for a project.
 
@@ -65,8 +65,14 @@ The [implemented-features guide](features.md) shows how to use each of these. Th
 
 Argon has its own syntax and a restricted set of capabilities. “Subset of C++” describes its intended scope and implementation relationship; an Argon source file is not valid C++ source. Arbitrary C++ headers and object APIs cannot be imported directly.
 
+## From a small project to a larger C++ application
+
+The long-term goal is to start with Argon’s simple workflow and migrate to independently maintained C++ when a project needs greater control. That future export should produce idiomatic C++, organized source files, required runtime support, and a standalone build configuration.
+
+Today, `argonc emit-cpp` exports standalone generated C++. It does **not** yet produce an idiomatic, maintainable C++ project. Native dependencies still need their headers, sources, and link settings. See the [export instructions](build.md#export-and-the-migration-goal).
+
 ## Project purpose
 
-The intended use case is a small new application that needs native C++ functionality without maintaining a separate application build system. Argon emphasizes quick project creation, checked application code, reference counting, and a narrow explicit library boundary. That is the project's intended distinction from broader C++ successor efforts such as Carbon, rather than a feature or performance comparison.
+The intended use case is a small-to-medium new application that needs native C++ functionality without maintaining a separate application build system. Argon emphasizes quick project creation, checked application code, reference counting, and a narrow explicit library boundary. That is the project's intended distinction from broader C++ successor efforts such as Carbon, rather than a feature or performance comparison.
 
 The project is licensed under [Apache-2.0](https://github.com/RohanGoparaju028/Argon/blob/main/LICENSE).

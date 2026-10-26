@@ -1,67 +1,510 @@
 # Argon
 
-[Read the documentation](https://rohangoparaju028.github.io/Argon/) · [Implemented features](docs/features.md) · [Getting started](docs/getting-started.md) · [Current status](docs/status.md)
+**A native language for small-to-medium projects that need C++ libraries without managing a separate C++ build system.**
 
-**A small subset of c++ for projects that need C++  without necessarily need c++  files.**
+[Documentation](https://rohangoparaju028.github.io/Argon/) · [Implemented features](docs/features.md) · [Language reference](docs/language.md) · [Current status](docs/status.md)
 
-Argon has its own syntax and reference-counted heap objects and collections, checked arithmetic, and explicit one-way C++ bindings. `argonc` is both the compiler and the project's build tool. The compiler is written entirely in C++17.
- It is a restricted language with C++ interoperability, rather than a literal syntactic subset of C++.
+## Why Argon exists
+
+For a small-to-medium application, configuring and maintaining a C++ build can take more effort than the application warrants. Argon aims to make starting that project straightforward: write application code in Argon, describe native dependencies in one manifest, and let `argonc` handle compilation and linking.
+
+Argon has its own grammar and language rules. Its compiler is written in C++17 and translates Argon to C++17, which Clang or GCC compiles into a native executable. Interoperability is one-way: Argon calls explicitly bound C++ functions. C++ libraries do not need to understand Argon.
+
+```text
+Argon source + configured C++ sources and libraries
+                       ↓
+        argonc: check → generate C++ → compile → link
+                       ↓
+                Native executable
+```
+
+The long-term goal is **start with Argon's simple workflow, then move to maintainable C++ when the project needs greater control**. An eventual migration export should produce idiomatic C++, meaningful names, organized source files, the required runtime support, and a standalone build configuration.
+
+**Current stage: experimental 0.1.0.** Project creation, native building, reference counting, and explicit scalar C++ bindings work today. `argonc emit-cpp` exports standalone generated C++, but an idiomatic, organized C++ project export is **planned, not implemented**. Complex C++ libraries may need hand-written wrappers.
+
+Compiling through C++ does not make every error behave like ordinary C++. Argon reports its own syntax/type errors and adds checked arithmetic, pointer access, and collection access. Native compilation/linking errors come from the C++ toolchain. Foreign C++ code retains its own risks and behavior.
 
 ## Build the compiler
 
-You need CMake 3.16+ and a C++17 compiler. Clang and GCC are the supported native backends.
+You need Git, CMake 3.16+, and a C++17 compiler. Clang and GCC are the supported native backends.
 
 ```sh
+git clone https://github.com/RohanGoparaju028/Argon.git
+cd Argon
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel 2
-ctest --test-dir build --output-on-failure
 ./build/argonc --version
 ```
 
-On Windows, use a MinGW-w64 GCC or Clang environment and `build/argonc.exe`. To install, run `cmake --install build --prefix /your/prefix` and put that prefix's `bin` directory on PATH. The runtime is embedded in `argonc`; no separate runtime source installation is needed.
+On macOS/Linux, make it available in the current shell:
 
-## Start a project
+```sh
+export PATH="$PWD/build:$PATH"
+argonc doctor
+```
+
+For a permanent installation, use `cmake --install build --prefix /your/prefix` and add `/your/prefix/bin` to PATH. On Windows, use a MinGW-w64 GCC or Clang environment and `build/argonc.exe`. No Python dependency is required by the compiler or build tool.
+
+## Start a project anywhere
 
 With `argonc` on PATH:
 
 ```sh
-argonc new hello
-cd hello
+argonc new "$HOME/hello-argon"
+cd "$HOME/hello-argon"
 argonc run
 ```
 
-The generated project contains `Argon.toml`, `.gitignore`, and `src/main.ar`:
+Edit `src/main.ar` and run again. The project contains `Argon.toml`, `.gitignore`, and `src/main.ar`. `new` requires a new directory; `argonc init` initializes an existing directory without overwriting generated files.
 
-```rust
-test {
-    const answer: i32 = 6 * 7;
-    assert(answer == 42);
-}
+| Command | Use |
+| --- | --- |
+| `argonc check` | Check types and execute global compile-time blocks |
+| `argonc build` | Build `.argon/build/release/NAME` |
+| `argonc run` | Build and run the project |
+| `argonc build --debug` | Build `.argon/build/debug/NAME` with native debug information |
+| `argonc build -o PATH` | Choose an executable output path whose parent exists |
+| `argonc emit-cpp -o program.cpp` | Export standalone generated C++ |
+| `argonc doctor` | Locate the native C++ compiler |
 
+Commands discover the nearest `Argon.toml`. A single file also works: `argonc run example.ar`. `.ar` is the primary extension; `.fe` is accepted too. See [the build reference](docs/build.md) for manifest fields and native dependency configuration.
+
+## Use each language feature
+
+Each subsection below is independent. For a block containing only statements, place it inside this entry function:
+
+```text
 fn main() -> i32 {
-    println("Hello from Argon!");
-    println(answer);
+    // Put one statement example here.
     return 0;
 }
 ```
 
-`test` is Argon's metaprogramming keyword. Its block lives at global scope and executes during compilation, including `argonc check`. Direct `const` declarations in the block become module constants; temporary `let` bindings stay in the block. A failed assertion stops compilation. No extra `meta` or `pure` keywords are used.
+Examples that already contain `fn main()` are complete programs. Save one as `example.ar` and run `argonc run example.ar`. The imports and C++ examples specify their additional files.
 
-| Command | Purpose |
-| --- | --- |
-| `argonc new NAME` | Create a working project |
-| `argonc new NAME --cpp` | Create a project with a real C++ library binding |
-| `argonc init [DIRECTORY]` | Initialize an existing directory without overwriting source files |
-| `argonc check` | Resolve imports, check types, and execute compile-time blocks |
-| `argonc build` | Build a native executable |
-| `argonc run` | Build and execute the project, returning its exit status |
-| `argonc build --debug` | Build with debug information |
-| `argonc emit-cpp -o program.cpp` | Export standalone generated C++ |
-| `argonc doctor` | Locate the native compiler |
+### Variables and constants
 
-Project commands discover the nearest `Argon.toml`, including from a source subdirectory. A single file also works: `argonc run examples/tour.ar`, `argonc check file.ar`, or `argonc file.ar -o app`. `.ar` is the new extension; `.fe` is also accepted for familiar source files. Existing source must use the features supported by this new implementation.
+`let` is mutable; `const` prevents mutation through that binding. All bindings need an initial value. Local types can be inferred.
 
-## C++ libraries
+```text
+let count = 1;
+count += 2;
+const limit: i32 = 10;
+assert(count < limit);
+```
+
+`const` does not make shared objects deeply immutable: another mutable alias can still change their contents.
+
+### Basic types and numeric casts
+
+The scalar types are `i32`, `i64`, `f64`, `bool`, and `string`. `void` is a function result type. Numbers support type suffixes and explicit casts.
+
+```text
+let small: i32 = 42;
+let large: i64 = 100i64;
+let fraction: f64 = 2.5;
+let enabled: bool = true;
+let label: string = "Argon";
+let widened = i64(small);
+let narrowed = i32(large);
+assert(widened == 42i64 && narrowed == 100);
+assert(enabled && fraction > 0.0);
+println(label);
+```
+
+Narrowing checks range. Integer casts reject fractional values; integer-to-float conversion can lose precision. Strings contain bytes, preserve UTF-8 source bytes, and use double quotes. `//` and `/* ... */` comments are supported.
+
+### Operators and checked arithmetic
+
+Arithmetic uses `+ - * / %`, comparisons use `== != < > <= >=`, and Boolean logic uses `! && ||`. Assignment supports `= += -= *= /= %=` and postfix `++` / `--`.
+
+```text
+let value = 10;
+value *= 3;
+value--;
+assert(value == 29);
+assert(value % 2 == 1 && !(value < 0));
+println("value: " + str(value));
+```
+
+Integer overflow, invalid narrowing, division by zero, and non-finite floating-point results are checked. Boolean operators short-circuit. Arguments and operands evaluate left to right.
+
+### Functions and return values
+
+Parameters require types. Use `-> TYPE` for a result and explicit `return`. Omitting the result annotation means `void`. Recursion is supported.
+
+```text
+fn add(left: i32, right: i32) -> i32 {
+    return left + right;
+}
+
+fn greet() {
+    println("Hello!");
+}
+
+fn main() -> i32 {
+    greet();
+    println(add(20, 22));
+    return 0;
+}
+```
+
+`main` must have no parameters and return `i32`; its result becomes the process exit status. Non-void functions must return on every normal path.
+
+### Public/private declarations and modules
+
+Declarations are private to their module by default. Add `pub` to export one; `priv` explicitly states the default. `main` does not need `pub`.
+
+Create `math.ar`:
+
+```text
+priv fn offset() -> i32 { return 2; }
+
+pub fn answer() -> i32 {
+    return 40 + offset();
+}
+```
+
+Create `main.ar` beside it:
+
+```text
+import math;
+
+fn main() -> i32 {
+    println(math.answer());
+    return 0;
+}
+```
+
+Run `argonc run main.ar`. Imports precede declarations. `import support.math;` resolves `support/math.ar`. Import cycles and ambiguous short names are rejected; imported modules cannot define `main`.
+
+### Function pipelines
+
+`value |> function` calls a one-argument function with that value. Pipelines associate left to right.
+
+```text
+fn double(value: i32) -> i32 { return value * 2; }
+fn increment(value: i32) -> i32 { return value + 1; }
+
+fn main() -> i32 {
+    println(20 |> double |> increment);
+    return 0;
+}
+```
+
+This prints `41`. Functions are not first-class values in this version.
+
+### If and else
+
+Conditions require `bool`; branches use braces.
+
+```text
+let score = 42;
+if (score >= 40) {
+    println("passed");
+} else {
+    println("try again");
+}
+```
+
+### While loops
+
+```text
+let remaining = 3;
+while (remaining > 0) {
+    println(remaining);
+    remaining--;
+}
+```
+
+### For loops, break, and continue
+
+Loops use C-style `for` syntax. `continue` skips to the next iteration; `break` exits the nearest loop or switch.
+
+```text
+for (let i = 0; i < 5; i++) {
+    if (i == 1) { continue; }
+    if (i == 4) { break; }
+    println(i);
+}
+```
+
+This prints `0`, `2`, and `3`. Range-based `for ... in` loops are not implemented.
+
+### Switch
+
+`switch` selects literal integer, Boolean, or string cases. Cases do not fall through; a trailing `break` is optional.
+
+```text
+let command = "run";
+switch (command) {
+    case "run": println("running");
+    case "check": println("checking");
+    default: println("unknown");
+}
+```
+
+### Enums and match
+
+Tagged enums can carry typed payloads. `match` is an expression that returns a value and binds variant payloads.
+
+```text
+enum Result {
+    Ok(value: i32),
+    Err(message: string),
+}
+
+fn main() -> i32 {
+    let result = Result::Ok(42);
+    let text = match result {
+        Result::Ok(value) => "value: " + str(value),
+        Result::Err(message) => "error: " + message,
+    };
+    println(text);
+    return 0;
+}
+```
+
+Enum matches must cover every variant or use `_`. Boolean matches must cover both values or use `_`; other scalar matches require `_`. Payload bindings are immutable. Patterns are one level deep; guards and nested patterns are not supported.
+
+### Scalar match and wildcard
+
+```text
+let code = 2;
+let label = match code {
+    1 => "one",
+    2 => "two",
+    _ => "other",
+};
+println(label);
+```
+
+### Structs: value semantics
+
+Constructors initialize every field in declaration order. Copying a struct copies its value; owning fields retain their referenced allocations.
+
+```text
+struct Point { x: i32; y: i32; }
+
+fn main() -> i32 {
+    let original = Point(3, 4);
+    let copy = original;
+    copy.x = 9;
+    assert(original.x == 3);
+    return 0;
+}
+```
+
+### Classes: shared objects
+
+A class constructor allocates a reference-counted object. Copies share that object. Classes currently have fields, without inheritance or user-defined instance methods.
+
+```text
+class Counter { value: i32; }
+
+fn main() -> i32 {
+    let counter = Counter(1);
+    let alias = counter;
+    alias.value++;
+    assert(counter.value == 2);
+    return 0;
+}
+```
+
+### Owning pointers and dereferencing
+
+`Ptr<T>` is a shared owning pointer. `*pointer` accesses the stored value; `.get()` reads a value. Aggregate fields also accept `pointer->field` and `pointer.field`.
+
+```text
+let owner = Ptr<i32>(40);
+let alias = owner;
+assert(strong_count(owner) == 2);
+*alias += 2;
+assert(owner.get() == 42);
+alias.reset();
+assert(owner.use_count() == 1);
+```
+
+An object is destroyed when its final owner is reset, overwritten, or leaves scope. Empty access is checked. There is no manual `free`, raw address access, pointer arithmetic, or unique/move-only pointer type.
+
+### Weak pointers and memory release
+
+A weak pointer observes an allocation without owning it. Upgrade it to an owner and check for emptiness before access.
+
+```text
+let owner = Ptr<i32>(42);
+let observer: Weak<i32> = weak(owner);
+{
+    let recovered = upgrade(observer);
+    if (!is_empty(recovered)) { println(*recovered); }
+}
+owner.reset();
+assert(is_expired(observer));
+assert(is_empty(upgrade(observer)));
+```
+
+Strong cycles are not collected. Use weak back-references for parent/child graphs; see [the family example](examples/family.ar). Weak observers may retain bookkeeping memory after the object has been destroyed.
+
+### Array
+
+```text
+let values = Array<i32>();
+values.push(10);
+values.push(20);
+values[0] = 11;
+assert(values.get(0) == 11);
+assert(values.pop() == 20);
+assert(values.length() == 1);
+```
+
+Arrays also have `set`, `front`, and `back`. Indexing and empty pops are checked.
+
+### LinkedList
+
+```text
+let values = LinkedList<i32>();
+values.push(20);
+values.push_front(10);
+assert(values.front() == 10);
+assert(values.pop_front() == 10);
+assert(values[0] == 20);
+```
+
+Linked lists support the array operations plus front insertion/removal. Indexed access takes linear time.
+
+### Deque
+
+```text
+let values = Deque<i32>();
+values.push(20);
+values.push_front(10);
+assert(values.front() == 10);
+assert(values.back() == 20);
+assert(values.pop_front() == 10);
+assert(values.pop() == 20);
+```
+
+A deque supports insertion and removal at both ends, plus indexed access.
+
+### Stack
+
+```text
+let pending = Stack<string>();
+pending.push("first");
+pending.push("last");
+assert(pending.top() == "last");
+assert(pending.pop() == "last");
+```
+
+A stack is last-in, first-out.
+
+### Queue
+
+```text
+let pending = Queue<string>();
+pending.enqueue("first");
+pending.enqueue("last");
+assert(pending.front() == "first");
+assert(pending.dequeue() == "first");
+```
+
+A queue is first-in, first-out.
+
+### HashMap
+
+```text
+let scores = HashMap<string, i32>();
+scores.set("Ada", 42);
+assert(scores.contains("Ada"));
+scores["Ada"] += 1;
+assert(scores.get("Ada") == 43);
+let names = scores.keys();
+assert(names[0] == "Ada");
+assert(scores.remove("Ada"));
+```
+
+Keys must be integers, Booleans, or strings. `keys()` returns a sorted array. Reading a missing key is an error; use `set` to insert an entry.
+
+### HashSet
+
+```text
+let tags = HashSet<string>();
+assert(tags.insert("native"));
+assert(!tags.insert("native"));
+assert(tags.contains("native"));
+let items = tags.items();
+assert(items[0] == "native");
+assert(tags.remove("native"));
+```
+
+Elements must be integers, Booleans, or strings. `items()` returns a sorted array.
+
+### Shared collections and cloning
+
+Copying a collection retains the same storage. `clone()` allocates separate storage and copies the elements; owning elements still share their referenced objects.
+
+```text
+let values = Array<i32>();
+values.push(42);
+let alias = values;
+alias[0] = 43;
+assert(values[0] == 43);
+let independent = values.clone();
+independent[0] = 7;
+assert(values[0] == 43);
+alias.clear();
+assert(values.is_empty());
+assert(!is_empty(values));
+```
+
+All seven collections provide `length`, `is_empty`, `clear`, `clone`, `use_count`, and `reset`. `collection.is_empty()` checks its size; `is_empty(collection)` checks whether its owning allocation exists. `clear()` changes shared contents; `reset()` releases one handle. See [the full memory API](docs/memory.md).
+
+### Compile-time metaprogramming
+
+Global `test` blocks run during `check`, `build`, `run`, and `emit-cpp`. A direct typed `const` in a block becomes a private module constant. Temporary `let` bindings remain local.
+
+```text
+fn square(value: i32) -> i32 { return value * value; }
+
+test {
+    const computed: i32 = square(7);
+    assert(computed == 49);
+}
+
+fn main() -> i32 {
+    println(computed);
+    return 0;
+}
+```
+
+Compile-time evaluation supports scalar computations, function calls, loops, local mutation, conditionals, scalar matching, and assertions. It cannot perform I/O, invoke C++, or construct heap/aggregate values. Execution is bounded to 100,000 steps and 64 nested function calls. `test` is not a runtime test declaration or a syntax-generating macro system.
+
+### Output, strings, length, and assertions
+
+```text
+let message = "Hello";
+print(message);
+println(" from Argon!");
+println();
+assert(length(message) == 5);
+println(str(42));
+```
+
+Printing and string conversion accept scalar values. `str(value)` and `string(value)` convert scalars to strings. `length` counts string bytes or collection elements. Assertions also work inside compile-time `test` blocks.
+
+### Console input
+
+```text
+print("Your name: ");
+let name = read_line();
+println("Hello, " + name);
+```
+
+`read_line()` reads standard input. Programs using runtime input or foreign libraries are not promised identical output across runs.
+
+## Use C++ libraries
+
+Create the complete native example:
 
 ```sh
 argonc new native-demo --cpp
@@ -69,54 +512,101 @@ cd native-demo
 argonc run
 ```
 
-That command scaffolds an Argon application, a C++ header and source, and the native build configuration. The application calls a C++ function and prints `42`:
+It prints `42`. The generated `src/main.ar` declares and calls the native function:
 
-```rust
+```text
 extern cpp fn twice(value: i32) -> i32 = "demo::twice";
 
 fn main() -> i32 {
-    unsafe {
-        println(twice(21));
-    }
+    unsafe { println(twice(21)); }
     return 0;
 }
 ```
 
-Bindings currently support numeric and boolean values plus `void` returns. The generated bridge checks the exact C++ function signature during native compilation. C++ calls require `unsafe` because arbitrary native libraries can violate memory safety. See [C++ interoperability](docs/cpp.md).
+The corresponding `Argon.toml` configures the native files:
 
-## Implemented language
+```toml
+[project]
+schema = 1
+name = "native-demo"
+entry = "src/main.ar"
 
-- Typed functions, inferred local bindings, immutable constants, explicit returns, and scalar casts.
-- `i32`, `i64`, `f64`, `bool`, and byte strings; checked integer overflow, numeric narrowing, division, and finite floating-point results.
-- Value structs, reference-counted classes, initialized fields, and deterministic cleanup when the last owner is released.
-- Reference-counted `Array<T>`, `LinkedList<T>`, `Deque<T>`, `Stack<T>`, `Queue<T>`, `HashMap<K,V>`, and `HashSet<T>` with checked access and explicit storage cloning.
-- Typed owning `Ptr<T>` and non-owning `Weak<T>` handles, checked dereferencing, weak upgrade, expiration tests, and owner counts.
-- VS Code run/check/build commands and CodeLLDB debugging; matching Vim/Neovim commands with LLDB and optional nvim-dap.
-- Tagged enums with payloads and exhaustive `match` expressions.
-- `switch` statements with literal cases and no implicit fallthrough.
-- `if`, `while`, C-style `for`, `break`, `continue`, and unary function pipelines with `|>`.
-- Local modules through `import`, with explicit `pub` exports and private declarations by default.
-- Global `test` blocks with bounded, deterministic scalar evaluation, ordinary function calls, generated constants, and compile-time assertions.
-- An integrated build tool with local C++ sources, headers, include paths, library directories, and system-library linking.
+[cpp]
+headers = ["demo.hpp"]
+sources = ["native/demo.cpp"]
+include_dirs = ["native"]
+library_dirs = []
+libraries = []
+```
 
-## Determinism and safety
+Bindings currently accept numeric/Boolean arguments and numeric/Boolean/void results. Use `std::int32_t`, `std::int64_t`, `double`, and `bool` for exact native signatures. `argonc check` checks the Argon declaration; native compilation checks the C++ symbol and signature.
 
-Compile-time blocks cannot perform I/O or call C++; they have no filesystem, network, clock, randomness, or environment APIs. They run with fixed instruction and recursion limits. Their results depend on explicit inputs and source constants. Ordinary application code may perform I/O, so whole-program determinism is not promised. Floating-point results across different compiler targets are not guaranteed identical.
+Calls require `unsafe`. C++ classes, strings, raw pointers, references, callbacks, and direct template binding are not supported across the boundary. A C++ wrapper can use a complex library internally and expose supported scalar functions. The builder can link local native sources and installed libraries, but does not install dependencies. See [the complete C++ guide](docs/cpp.md).
 
-Classes, owning pointers, and collection storage use automatic reference counting. Copying a class, owning pointer, or collection retains the same allocation; structs keep value semantics and retain any owning fields they contain. Weak pointers observe allocations without keeping them alive. Strong cycles are not collected: use weak back-references. The language exposes no raw addresses or escaping native references and checks pointer/collection access and integer operations. These protections are not a formal memory-safety proof, and foreign C++ code remains outside them. See [memory and collections](docs/memory.md).
+## Export generated C++ today
 
-This first implementation does **not** include inheritance, instance methods, closures, async, borrowing, user-defined generics, arbitrary C++ header import, package downloads, incremental compilation, or general syntax-generating macros. Metaprogramming currently computes scalar constants and validates programs through `test` blocks. See [the language reference](docs/language.md).
+For a project without external native dependencies:
 
-## Why Argon exists
+```sh
+argonc emit-cpp -o program.cpp
+c++ -std=c++17 program.cpp -o program
+./program
+```
 
-Argon's focus is the small greenfield application that needs a native C++ library. Its goal is to make project creation, safe application code, compile-time computation, and native linking work together through one command. That is the project's intended distinction from broader C++ successor efforts such as Carbon; it is not a claim that those projects cannot address similar use cases.
+The generated file includes Argon's runtime support and can be compiled without `argonc`. A project with C++ bindings still needs its headers, native sources, include paths, and libraries supplied to the C++ compiler.
 
-- [Language syntax and semantics](docs/language.md)
-- [Argon Build and the manifest](docs/build.md)
-- [C++ bindings and safety boundaries](docs/cpp.md)
-- [Memory and collections](docs/memory.md)
-- [VS Code runner and debugger](editors/vscode/README.md)
-- [Vim and Neovim support](editors/vim/README.md)
-- [Runnable examples](examples/README.md)
+**This is generated compiler output, not yet an idiomatic migration export.** Exporting a clean, maintainable, multi-file C++ project with a standalone build configuration is a future goal. Keeping Argon's checked behavior may require runtime helpers even in that future export.
 
-Licensed under Apache-2.0.
+## Use the editor integrations
+
+### Vim and Neovim
+
+Add the plugin to Vim's runtime path before enabling filetype plugins:
+
+```vim
+set runtimepath+=/absolute/path/to/Argon/editors/vim
+filetype plugin on
+syntax on
+let g:argon_compiler = '/absolute/path/to/Argon/build/argonc'
+```
+
+Use `:ArgonCheck`, `:ArgonRun`, `:ArgonRunProject`, `:ArgonBuild`, or `:ArgonDebug`. Debugging needs LLDB; Neovim can optionally use nvim-dap and lldb-dap. [Installation and commands](editors/vim/README.md).
+
+### VS Code
+
+Build the extension package from the repository:
+
+```sh
+cd editors/vscode
+npm run package
+```
+
+Use **Extensions: Install from VSIX**, select the generated `.vsix`, and set `argon.compilerPath` or put `argonc` on PATH. Use **Argon: Check File**, **Run File**, **Build Project**, or **Debug File**. Debugging needs CodeLLDB. [Installation and commands](editors/vscode/README.md).
+
+Native source mappings and breakpoint resolution have been checked; live stepping was not verified on the development host. See [current status](docs/status.md) for editor/platform verification limits.
+
+## Run the existing examples and tests
+
+From the compiler repository:
+
+```sh
+ctest --test-dir build --output-on-failure
+./build/argonc run examples/tour.ar
+./build/argonc run examples/pointers.ar
+./build/argonc run examples/family.ar
+./build/argonc run examples/linked_nodes.ar
+./build/argonc run examples/collections.ar
+./build/argonc run examples/shared_collections.ar
+```
+
+CTest includes additional editor/debugger tests when their tools are installed. See [the examples index](examples/README.md).
+
+## Current boundaries
+
+Argon's checks and reference counting reduce common errors, but this prototype has no formal memory-safety proof. Strong cycles need weak links. Foreign C++ can corrupt memory or crash. Compile-time scalar evaluation is deterministic for fixed inputs and target behavior; runtime I/O, cross-target floating-point results, and executable bytes are outside that guarantee.
+
+Inheritance, instance methods, closures, async, borrowing, user-defined generics, arbitrary C++ header import, package downloads, incremental compilation, general syntax-generating macros, and idiomatic C++ project migration export are not implemented. See [the current-status page](docs/status.md) for the complete scope.
+
+Argon's intended distinction from broader C++ successor efforts such as Carbon is its focus on a low-setup application workflow and a future path to independently maintained C++. This is a statement of project goals, not a claim of feature or performance superiority.
+
+Licensed under [Apache-2.0](LICENSE).

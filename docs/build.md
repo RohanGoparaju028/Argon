@@ -66,3 +66,17 @@ Compile-time computations are bounded and deterministic for fixed inputs and tar
 ## Editors
 
 [VS Code](vscode.md) provides file/project runners, checks, and CodeLLDB debugging. The shared [Vim/Neovim plugin](vim.md) provides the same commands, quickfix checks, and LLDB or optional nvim-dap debugging. All use `argonc` and its native source-mapped debug builds.
+
+## Export and the migration goal
+
+For an application without external native dependencies:
+
+```sh
+argonc emit-cpp -o program.cpp
+c++ -std=c++17 program.cpp -o program
+./program
+```
+
+The generated file includes runtime support and can compile without `argonc`. Applications with C++ bindings still require their native headers, sources, include paths, and libraries to be supplied to the C++ compiler.
+
+The intended future migration path is an idiomatic, maintainable C++ project with meaningful names, organized source files, runtime support where required, and a standalone build configuration. **That migration export is not implemented.** Today's output is standalone generated compiler code. Preserving Argon's checked operations and reference-counted behavior is part of the migration goal.

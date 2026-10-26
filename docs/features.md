@@ -6,6 +6,8 @@ title: Implemented features
 
 This is the feature inventory for **Argon 0.1.0**. Each feature below is implemented in the current compiler. Examples with `fn main()` are complete programs: save one as `main.ar` and run `argonc run main.ar`.
 
+For shorter, independent examples—including each collection separately—see [Use each language feature in the README](https://github.com/RohanGoparaju028/Argon#use-each-language-feature).
+
 ## At a glance
 
 | Area | Available now |

@@ -22,6 +22,7 @@ See [what Argon supports today](features.md) for the complete feature inventory 
 | Metaprogramming | Global `test` blocks evaluate scalar computations and generate constants; 100,000 steps and 64 nested calls per compilation. No syntax-generating macros or compile-time heap objects. |
 | C++ interoperability | Explicit scalar function bindings. No automatic header import, native classes, strings/references/pointers across the boundary, callbacks, or direct template binding. |
 | Build tool | Project scaffolding, manifest discovery, checks, native compilation, linking, debug builds, and C++ export. No package registry/resolver, dependency installation, or incremental cache. |
+| C++ export | Standalone generated C++ is available through `emit-cpp`. Idiomatic multi-file C++ project migration with a standalone build configuration is planned, not implemented. |
 | Editors | Syntax highlighting, explicit check/run/build commands, native debugger integration. No language server, Argon expression evaluator, or custom debugger variable formatter. |
 
 ## Memory safety boundaries

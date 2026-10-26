@@ -14,6 +14,8 @@ call assert_equal([], getqflist())
 let s:bad = tempname() . '.ar'
 call writefile(['fn main()->i32{return unknown_name;}'], s:bad)
 execute 'edit ' . fnameescape(s:bad)
+" Diagnostics must work even when Vim only redirects stdout by default.
+let &shellredir = '>%s'
 try
   ArgonCheck
 catch

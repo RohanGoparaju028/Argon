@@ -30,6 +30,7 @@ jobs:
           path-type: inherit
           update: true
           install: >-
+            vim
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja

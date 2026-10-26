@@ -1,3 +1,7 @@
+---
+title: Projects and builds
+---
+
 # Argon Build
 
 `argonc` owns the application build workflow. There is no separate Makefile, CMake project, or executable build script for an Argon application. CMake is used only to build the compiler itself.
@@ -61,4 +65,4 @@ Compile-time computations are bounded and deterministic for fixed inputs and tar
 
 ## Editors
 
-[VS Code](../editors/vscode/README.md) provides file/project runners, checks, and CodeLLDB debugging. The shared [Vim/Neovim plugin](../editors/vim/README.md) provides the same commands, quickfix checks, and LLDB or optional nvim-dap debugging. All use `argonc` and its native source-mapped debug builds.
+[VS Code](vscode.md) provides file/project runners, checks, and CodeLLDB debugging. The shared [Vim/Neovim plugin](vim.md) provides the same commands, quickfix checks, and LLDB or optional nvim-dap debugging. All use `argonc` and its native source-mapped debug builds.

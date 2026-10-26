@@ -1,10 +1,14 @@
+---
+title: Language reference
+---
+
 # Argon language reference
 
 This reference describes the new C++17 implementation, version 0.1.0. Its executable is `argonc`.
 
 ## Functions and bindings
 
-```rust
+```text
 fn add(left: i32, right: i32) -> i32 {
     return left + right;
 }
@@ -21,6 +25,16 @@ fn main() -> i32 {
 Parameters require types. Results default to `void`; blocks do not implicitly return their last expression. Non-void functions must return on every possible normal path. The executable entry is exactly `fn main() -> i32` with no arguments. Its return value becomes the process exit status. Uncaught checked runtime errors print a diagnostic and exit with status 1.
 
 `let` is mutable; `const` prevents assignment and mutation through that binding. Other mutable aliases can still change shared contents. Bindings require initialization. Local types can be inferred. Parameters are passed by value: owning handles retain their shared allocation, while structs and scalars copy values. All names are case-sensitive; identifiers use ASCII letters, digits, and underscores, starting with a letter or underscore. The `ag_` prefix and identifiers containing double underscores are reserved for generated code.
+
+## Visibility
+
+Functions, structs, classes, enums, and constants are private to their module by default. Prefix a declaration with `pub` to make it available to importing modules. `priv` explicitly states the default. `main` is recognized as the executable entry without `pub`; it is not automatically a public library function.
+
+```text
+fn helper() -> i32 { return 10; }
+pub fn answer() -> i32 { return 42; }
+fn main() -> i32 { return helper(); }
+```
 
 ## Types and operations
 
@@ -50,7 +64,7 @@ Mutable bindings support `=`, `+=`, `-=`, `*=`, `/=`, `%=`, and postfix `++` / `
 
 ## Global metaprogramming with test
 
-```rust
+```text
 fn factorial(n: i64) -> i64 {
     if (n <= 1) { return 1; }
     return n * factorial(n - 1);
@@ -78,7 +92,7 @@ Dependencies execute their test blocks before importing modules. Within a module
 
 ## Structs, classes, pointers, and collections
 
-```rust
+```text
 struct Point {
     x: i32;
     y: i32;
@@ -105,7 +119,7 @@ Additional collections are `LinkedList<T>`, `Deque<T>`, `Stack<T>`, `Queue<T>`, 
 
 ## Tagged enums and match
 
-```rust
+```text
 enum Result {
     Ok(value: i32),
     Err(message: string),
@@ -125,7 +139,7 @@ An enum match must cover every variant or finish with `_ => expression`. A boole
 
 ## Control flow and switch
 
-```rust
+```text
 fn main() -> i32 {
     for (let i = 0; i < 3; i++) {
         switch (i) {

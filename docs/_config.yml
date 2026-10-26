@@ -1,0 +1,18 @@
+title: Argon
+description: A small native language with reference counting and an integrated C++ build workflow.
+url: https://rohangoparaju028.github.io
+baseurl: /Argon
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+exclude:
+  - README.md

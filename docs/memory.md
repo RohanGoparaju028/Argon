@@ -1,3 +1,7 @@
+---
+title: Memory and collections
+---
+
 # Reference-counted memory and collections
 
 Argon uses automatic reference counting for shared heap objects and collection storage. Strings and other native value buffers use ordinary C++ scope-based ownership. The runtime is written in C++17 and implements owning handles with `std::shared_ptr` and observers with `std::weak_ptr`.
@@ -14,7 +18,7 @@ An object is destroyed when its last owner is overwritten, reset, or leaves scop
 
 ## Owning and weak pointers
 
-```rust
+```text
 let owner = Ptr<i32>(40);
 let alias = owner;
 assert(strong_count(owner) == 2);
@@ -35,7 +39,7 @@ if (!is_empty(recovered)) { println(*recovered); }
 
 ## Classes and cycle-safe object graphs
 
-```rust
+```text
 class Person {
     name: string;
     parent: Weak<Person>;
@@ -53,13 +57,13 @@ Classes and collections are already owning types: `Ptr<Person>` is the same type
 
 Recursive types must cross a class, collection, owning-pointer, or weak-pointer link. A struct cannot contain itself directly by value.
 
-**Strong cycles are not collected.** If a parent owns a child and that child owns its parent, both can remain alive forever. Use a weak link for the back-reference, as in [the family example](../examples/family.ar). Collections can also participate in cycles through their elements. Reference counting does not infer which link should be weak.
+**Strong cycles are not collected.** If a parent owns a child and that child owns its parent, both can remain alive forever. Use a weak link for the back-reference, as in [the family example](https://github.com/RohanGoparaju028/Argon/blob/main/examples/family.ar). Collections can also participate in cycles through their elements. Reference counting does not infer which link should be weak.
 
 ## Collections
 
 All collection constructors take no arguments and create empty, reference-counted storage. Copying a handle shares mutations. `clone()` creates independent collection storage; elements are copied according to their own types, so pointers and nested collections still share their referenced allocations.
 
-```rust
+```text
 let values = Array<i32>();
 let alias = values;
 alias.push(42);

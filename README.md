@@ -1,5 +1,7 @@
 # Argon
 
+[Read the documentation](https://rohangoparaju028.github.io/Argon/) · [Getting started](docs/getting-started.md) · [Current status](docs/status.md)
+
 **A small subset of c++ for projects that need C++  without necessarily need c++  files.**
 
 Argon has its own syntax and reference-counted heap objects and collections, checked arithmetic, and explicit one-way C++ bindings. `argonc` is both the compiler and the project's build tool. The compiler is written entirely in C++17.

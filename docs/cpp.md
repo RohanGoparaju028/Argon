@@ -1,3 +1,7 @@
+---
+title: C++ interoperability
+---
+
 # C++ interoperability
 
 Argon consumes C++ libraries through explicit function bindings. The compiler and builder are written in C++17, and Argon programs lower to checked C++17 and native machine code.
@@ -24,7 +28,7 @@ namespace demo {
 
 The binding uses the existing Argon function syntax plus an explicit C++ target:
 
-```rust
+```text
 extern cpp fn twice(value: i32) -> i32 = "demo::twice";
 
 fn main() -> i32 {
@@ -53,7 +57,7 @@ The bridge takes a typed function pointer to `demo::twice`. Native compilation f
 
 Set `[cpp] headers = ["cmath"]` and declare:
 
-```rust
+```text
 extern cpp fn square_root(value: f64) -> f64 = "std::sqrt";
 
 fn main() -> i32 {

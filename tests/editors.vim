@@ -17,6 +17,7 @@ execute 'edit ' . fnameescape(s:bad)
 try
   ArgonCheck
 catch
+  echom v:exception
   " The explicit command reports failure; the diagnostic must still be navigable.
 endtry
 call assert_equal(1, len(getqflist()))

@@ -1,0 +1,10 @@
+cpp "cmath";
+
+extern cpp fn square_root(value: f64) -> f64 = "std::sqrt";
+
+fn main() -> i32 {
+    unsafe {
+        println(square_root(81.0));
+    }
+    return 0;
+}

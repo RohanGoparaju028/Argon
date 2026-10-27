@@ -1,0 +1,9 @@
+const base: i32 = 40;
+
+fn main() -> i32 {
+    let count = base;
+    count += 2;
+    const label: string = "answer";
+    println(label + ": " + str(count));
+    return 0;
+}

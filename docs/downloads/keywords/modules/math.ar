@@ -1,0 +1,9 @@
+priv fn offset() -> i32 {
+    return 2;
+}
+
+pub const base: i32 = 40;
+
+pub fn answer() -> i32 {
+    return base + offset();
+}

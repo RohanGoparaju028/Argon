@@ -1,0 +1,13 @@
+fn add(left: i32, right: i32) -> i32 {
+    return left + right;
+}
+
+fn announce(value: i32) -> void {
+    println(value);
+    return;
+}
+
+fn main() -> i32 {
+    announce(add(20, 22));
+    return 0;
+}

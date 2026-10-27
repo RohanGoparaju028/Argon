@@ -2,7 +2,7 @@
 
 **A native language for small-to-medium projects that need C++ libraries without managing a separate C++ build system.**
 
-[Documentation](https://rohangoparaju028.github.io/Argon/) · [Implemented features](docs/features.md) · [Language reference](docs/language.md) · [Current status](docs/status.md)
+[Documentation](https://rohangoparaju028.github.io/Argon/) · [Implemented features](docs/features.md) · [Keyword reference](docs/keywords.md) · [Language reference](docs/language.md) · [Current status](docs/status.md)
 
 ## Why Argon exists
 
@@ -626,7 +626,7 @@ CTest includes additional editor/debugger tests when their tools are installed. 
 
 Argon's checks and reference counting reduce common errors, but this prototype has no formal memory-safety proof. Strong cycles need weak links. Foreign C++ can corrupt memory or crash. Compile-time scalar evaluation is deterministic for fixed inputs and target behavior; runtime I/O, cross-target floating-point results, and executable bytes are outside that guarantee.
 
-Inheritance, instance methods, closures, async, borrowing, user-defined generics, arbitrary C++ header import, package downloads, incremental compilation, general syntax-generating macros, and idiomatic C++ project migration export are not implemented. See [the current-status page](docs/status.md) for the complete scope.
+Inheritance, instance methods, closures, async, borrowing, user-defined generics, automatic translation of C++ header APIs, package downloads, incremental compilation, general syntax-generating macros, and idiomatic C++ project migration export are not implemented. See [the current-status page](docs/status.md) for the complete scope.
 
 Argon's intended distinction from broader C++ successor efforts such as Carbon is its focus on a low-setup application workflow and a future path to independently maintained C++. This is a statement of project goals, not a claim of feature or performance superiority.
 

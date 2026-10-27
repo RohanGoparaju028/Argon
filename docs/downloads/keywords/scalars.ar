@@ -1,0 +1,17 @@
+fn main() -> i32 {
+    let count: i32 = 42;
+    let large: i64 = 3000000000i64;
+    let fraction: f64 = 2.5;
+    let ready: bool = true;
+    let failed: bool = false;
+    let label: string = "Argon";
+    let widened: i64 = i64(count);
+
+    println(count);
+    println(large);
+    println(fraction);
+    println(ready && !failed);
+    println(label + " " + string(widened));
+    assert(length(label) == 5);
+    return 0;
+}

@@ -4,7 +4,7 @@ title: Language reference
 
 # Argon language reference
 
-This reference describes the new C++17 implementation, version 0.1.0. Its executable is `argonc`.
+This reference describes the new C++17 implementation, version 0.1.0. Its executable is `argonc`. For the definition, scope, restrictions, and runnable examples of every reserved word, use the [complete keyword reference](keywords.md).
 
 ## Functions and bindings
 

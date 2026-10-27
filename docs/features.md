@@ -8,6 +8,8 @@ This is the feature inventory for **Argon 0.1.0**. Each feature below is impleme
 
 For shorter, independent examples—including each collection separately—see [Use each language feature in the README](https://github.com/RohanGoparaju028/Argon#use-each-language-feature).
 
+The [keyword reference](keywords.md) defines all 33 reserved words, including the reserved-but-unimplemented `in`, and provides complete downloadable programs.
+
 ## At a glance
 
 | Area | Available now |
@@ -305,7 +307,7 @@ fn main() -> i32 {
 
 This requires a matching C++ header/source and manifest configuration. `argonc new native-demo --cpp` generates that complete working project. The builder compiles and links it; native compilation verifies the exact function signature.
 
-C++ wrappers may use complex libraries internally and expose the supported scalar interface. Direct C++ class, template, string, raw pointer, reference, callback, and automatic header import support is not implemented. Read the [C++ guide](cpp.md) for the complete example and safety boundary.
+C++ wrappers may use complex libraries internally and expose the supported scalar interface. Direct C++ class, template, string, raw pointer, reference, callback, and automatic C++ API translation are not implemented. Read the [C++ guide](cpp.md) for the complete example and safety boundary.
 
 ## Compiler, build system, and editors
 

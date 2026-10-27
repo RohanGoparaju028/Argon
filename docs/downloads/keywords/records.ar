@@ -1,0 +1,22 @@
+struct Point {
+    x: i32;
+    y: i32;
+}
+
+class Counter {
+    value: i32;
+}
+
+fn main() -> i32 {
+    let point = Point(3, 4);
+    let copy = point;
+    copy.x = 9;
+    println(point.x);
+    println(copy.x);
+
+    let counter = Counter(1);
+    let alias = counter;
+    alias.value++;
+    println(counter.value);
+    return 0;
+}

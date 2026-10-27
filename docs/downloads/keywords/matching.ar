@@ -1,0 +1,21 @@
+enum Result {
+    Ok(value: i32),
+    Err(message: string),
+}
+
+fn describe(result: Result) -> string {
+    return match result {
+        Result::Ok(value) => "value: " + str(value),
+        Result::Err(message) => "error: " + message,
+    };
+}
+
+fn main() -> i32 {
+    println(describe(Result::Ok(42)));
+    let label = match 7 {
+        0 => "zero",
+        _ => "nonzero",
+    };
+    println(label);
+    return 0;
+}

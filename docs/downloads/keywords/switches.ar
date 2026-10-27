@@ -1,0 +1,10 @@
+fn main() -> i32 {
+    for (let i = 0; i < 3; i++) {
+        switch (i) {
+            case 0: println("zero"); break;
+            case 1: println("one");
+            default: println("other");
+        }
+    }
+    return 0;
+}

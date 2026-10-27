@@ -8,6 +8,8 @@ This documentation describes **Argon 0.1.0**, reviewed on **27 October 2026**. I
 
 See [what Argon supports today](features.md) for the complete feature inventory and usage examples.
 
+The [keyword reference](keywords.md) lists all reserved words and their actual implementation status. `in` is reserved but has no implemented syntax.
+
 ## Implementation status
 
 | Feature | Status and boundary |

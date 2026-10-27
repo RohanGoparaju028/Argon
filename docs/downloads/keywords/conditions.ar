@@ -1,0 +1,11 @@
+fn main() -> i32 {
+    let score = 42;
+    if (score >= 40) {
+        println("passed");
+    } else if (score >= 20) {
+        println("retry");
+    } else {
+        println("failed");
+    }
+    return 0;
+}

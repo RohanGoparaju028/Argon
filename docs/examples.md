@@ -4,6 +4,8 @@ title: Examples
 
 # Argon examples
 
+For complete introductory programs with expected output and individual downloads, use the [keyword reference](keywords.md).
+
 From the repository root, run `./build/argonc run examples/NAME.ar` (or use the editor's Argon runner).
 
 | File | Demonstrates |

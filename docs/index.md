@@ -10,10 +10,10 @@ Argon is an experimental programming language for small-to-medium projects that 
 
 ## Start here
 
-See **[what Argon supports today](features.md)** for the full feature inventory.
+See **[what Argon supports today](features.md)** for the feature inventory, or **[the complete keyword reference](keywords.md)** for every implemented keyword, its rules, and runnable examples.
 
 1. [Install the compiler and create a project](getting-started.md).
-2. [Learn the syntax](language.md), including private-by-default functions and `pub` exports.
+2. [Learn the keywords](keywords.md), then consult the [language reference](language.md) for detailed semantics.
 3. [Understand reference counting](memory.md), owning pointers, weak pointers, and collections.
 4. [Call a C++ function](cpp.md) through an explicit binding.
 5. [Explore runnable examples](examples.md) and configure [Vim/Neovim](vim.md) or [VS Code](vscode.md).
@@ -63,7 +63,7 @@ argonc run
 
 The [implemented-features guide](features.md) shows how to use each of these. The [current-status page](status.md) records their limits and what is still missing.
 
-Argon has its own syntax and a restricted set of capabilities. “Subset of C++” describes its intended scope and implementation relationship; an Argon source file is not valid C++ source. Arbitrary C++ headers and object APIs cannot be imported directly.
+Argon has its own syntax and a restricted set of capabilities. “Subset of C++” describes its intended scope and implementation relationship; an Argon source file is not valid C++ source. Including a C++ header does not automatically import its functions or object types; explicit bindings define the supported interface.
 
 ## From a small project to a larger C++ application
 

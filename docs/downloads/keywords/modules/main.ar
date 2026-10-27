@@ -1,0 +1,7 @@
+import math;
+
+fn main() -> i32 {
+    println(math.answer());
+    println(math.base);
+    return 0;
+}

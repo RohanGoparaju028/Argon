@@ -1,0 +1,14 @@
+fn main() -> i32 {
+    let total = 0;
+    for (let i = 0; i < 6; i++) {
+        if (i == 1) { continue; }
+        if (i == 4) { break; }
+        total += i;
+    }
+    println(total);
+    while (total < 7) {
+        total++;
+    }
+    println(total);
+    return 0;
+}

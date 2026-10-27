@@ -57,7 +57,7 @@ argonc run
 | Metaprogramming | Global `test` blocks, scalar function evaluation, generated constants, and compile-time assertions |
 | Builtins | Console input/output, string conversion, length, assertions, numeric casts, and memory helpers |
 | Checked behavior | Integer overflow, narrowing, division, finite floating-point results, collection bounds, and empty pointer access |
-| C++ bindings | Explicit scalar function bindings with `extern cpp fn`, `unsafe` calls, native sources, and library linking |
+| C++ bindings | Quoted `cpp "header";` includes, explicit scalar bindings, `unsafe` calls, automatic `cpp/` source discovery, and library linking |
 | Build system | Project scaffolding, checking, native compilation, running, debug builds, and C++ export through `argonc` |
 | Editors | Vim/Neovim and VS Code syntax highlighting, check/run/build commands, and native debugger integration |
 

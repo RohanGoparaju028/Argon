@@ -288,9 +288,13 @@ The compiler also accepts the convenience imports `std`, `std.io`, `std.core`, `
 
 ## C++ interoperability available now
 
+`cpp "header";` includes local or standard headers using the same quoted syntax. New projects contain `cpp/`; native source files placed there are compiled automatically. Generated code defaults to `argon-cxx/release/`, configurable with `--cxx-dir` or `[project] cxx_dir`.
+
 `extern cpp fn` declares a binding to a named C++ function. Call it in an `unsafe` block. Supported boundary types are `i32`, `i64`, `f64`, and `bool`, with `void` also allowed as a result.
 
 ```text
+cpp "demo.hpp";
+
 extern cpp fn twice(value: i32) -> i32 = "demo::twice";
 
 fn main() -> i32 {

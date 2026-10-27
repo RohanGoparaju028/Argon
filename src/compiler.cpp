@@ -469,7 +469,14 @@ public:
         for(auto* d:constants)global_value(d);
         Decl* main=nullptr;if(entry->names.count("main")){main=entry->names.at("main");if(main->kind!="function"||main->mode=="foreign"||!main->parameters.empty()||main->result!=ti32)throw Error("entry must be fn main() -> i32",main->token);}
         for(const auto& u:units)if(u.get()!=entry&&u->names.count("main"))throw Error("an imported module cannot define main");if(require_main&&!main)throw Error("an executable needs fn main() -> i32");
-        Compiled result;result.cpp=generate(options,main);result.test_blocks=test_count;for(const auto& u:units)result.sources.push_back(u->file);return result;
+        BuildOptions native=options;
+        for(const auto& u:units)for(const auto& header:u->headers)
+            if(std::find(native.headers.begin(),native.headers.end(),header)==native.headers.end())native.headers.push_back(header);
+        Compiled result;result.cpp=generate(native,main);result.test_blocks=test_count;
+        for(const auto& u:units)result.sources.push_back(u->file);
+        for(const auto& header:native.headers)for(const auto& directory:native.include_dirs)
+            if(fs::is_regular_file(directory/header)){result.sources.push_back(fs::canonical(directory/header));break;}
+        return result;
     }
 };
 }

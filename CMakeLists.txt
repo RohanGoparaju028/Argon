@@ -27,6 +27,9 @@ if(BUILD_TESTING)
   add_test(NAME language_and_projects COMMAND ${CMAKE_COMMAND}
     -DCOMPILER=$<TARGET_FILE:argonc> -DSOURCE=${CMAKE_CURRENT_SOURCE_DIR}
     -DWORK=${CMAKE_CURRENT_BINARY_DIR}/tests -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration.cmake)
+  add_test(NAME native_project_layout COMMAND ${CMAKE_COMMAND}
+    -DCOMPILER=$<TARGET_FILE:argonc> -DWORK=${CMAKE_CURRENT_BINARY_DIR}/tests
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/native-layout.cmake)
 endif()
 find_program(ARGON_NODE node)
 if(BUILD_TESTING AND ARGON_NODE)
@@ -50,7 +53,7 @@ if(BUILD_TESTING AND ARGON_LLDB AND NOT WIN32)
 endif()
 install(TARGETS argonc RUNTIME DESTINATION bin)
 install(FILES README.md LICENSE DESTINATION share/doc/argon)
-install(DIRECTORY docs examples DESTINATION share/doc/argon PATTERN ".argon" EXCLUDE)
+install(DIRECTORY docs examples DESTINATION share/doc/argon PATTERN ".argon" EXCLUDE PATTERN "argon-cxx" EXCLUDE)
 install(DIRECTORY editors DESTINATION share/argon PATTERN "*.vsix" EXCLUDE PATTERN "test" EXCLUDE)
 install(FILES editors/vscode/README.md DESTINATION share/doc/argon/editors/vscode)
 install(FILES editors/vim/README.md DESTINATION share/doc/argon/editors/vim)

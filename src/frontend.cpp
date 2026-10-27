@@ -5,8 +5,11 @@
 #include <iomanip>
 #include <iterator>
 #include <sstream>
+#include <regex>
 
 namespace argon {
+bool valid_cpp_header(const std::string& name){return std::regex_match(name,std::regex("[A-Za-z0-9_][A-Za-z0-9_./+ -]*"))&&name.find("..") == std::string::npos;}
+
 std::string read_file(const fs::path& path){std::ifstream f(path,std::ios::binary);if(!f)throw Error("cannot read "+path.string());return {std::istreambuf_iterator<char>(f),{}};}
 void write_file(const fs::path& path,const std::string& text){std::ofstream f(path,std::ios::binary);f<<text;f.close();if(!f)throw Error("cannot write "+path.string());}
 std::string quote(const std::string& text){
@@ -100,13 +103,24 @@ class Parser {
         if(accept("unsafe")){auto n=node("unsafe",t);n->children={block()};return n;}
         auto n=node("expression",t);n->children={expr()};take(";");return n;
     }
+    void header(){
+        take("cpp");auto t=take();
+        if(t.kind!="string")throw Error("cpp requires a quoted header name",t);
+        auto name=decode_string(t);
+        if(!valid_cpp_header(name))throw Error("invalid C++ header name",t);
+        u.headers.push_back(name);take(";");
+    }
     void add(std::unique_ptr<Decl> d){if(u.names.count(d->name))throw Error("duplicate declaration '"+d->name+"'",d->token);d->unit=&u;u.names[d->name]=d.get();u.declarations.push_back(std::move(d));}
 public:
     Parser(Unit& unit,const std::string& source):u(unit),ts(lex(source,unit.file.string())){}
     void run(){
-        while(accept("import")){auto n=name();while(accept("."))n+='.'+name();take(";");u.imports.push_back(n);}
+        while(is("import")||is("cpp")){
+            if(is("cpp")){header();continue;}
+            take("import");auto n=name();while(accept("."))n+='.'+name();take(";");u.imports.push_back(n);
+        }
         while(!is("<eof>")){
             if(accept(";"))continue;
+            if(is("cpp")){header();continue;}
             if(accept("test")){auto test=block();u.tests.push_back(test);for(const auto& s:test->children)if(s->kind=="binding"&&s->constant){if(s->annotation.name.empty())throw Error("a constant exported by test needs an explicit type",s->token);auto d=std::make_unique<Decl>();d->kind="constant";d->name=s->text;d->token=s->token;d->result=s->annotation;d->body=s->children[0];d->test_export=true;s->declaration=d.get();add(std::move(d));}continue;}
             bool pub=accept("pub");if(!pub)accept("priv");auto t=token();auto d=std::make_unique<Decl>();d->token=t;d->public_=pub;
             bool foreign=accept("extern");if(foreign)take("cpp");

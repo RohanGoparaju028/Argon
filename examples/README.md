@@ -4,6 +4,7 @@ From the repository root, run `./build/argonc run examples/NAME.ar` (or use the 
 
 | File | Demonstrates |
 | --- | --- |
+| [native_files/](native_files/) | Complete project with local headers, C/C++ implementations, a header-only function, and a standard-library call |
 | [tour.ar](tour.ar) | Compile-time blocks, tagged enums, matches, structs, loops, arrays, switches |
 | [pointers.ar](pointers.ar) | Owning pointers, shared mutation, weak upgrade, expiry, and checked access |
 | [family.ar](family.ar) | Reference-counted classes with a weak parent link to avoid cycles |

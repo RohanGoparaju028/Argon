@@ -20,6 +20,7 @@ std::string read_file(const fs::path&);
 void write_file(const fs::path&,const std::string&);
 std::string quote(const std::string&);
 std::string decode_string(const Token&);
+bool valid_cpp_header(const std::string&);
 struct Type {
     std::string name; std::vector<Type> args;
     bool operator==(const Type& b)const{return name==b.name&&args==b.args;}
@@ -57,7 +58,7 @@ struct Decl {
 };
 struct Unit {
     fs::path file;int id=0;
-    std::vector<std::string> imports;
+    std::vector<std::string> imports,headers;
     std::map<std::string,Unit*> dependencies;
     std::vector<std::unique_ptr<Decl>> declarations;
     std::map<std::string,Decl*> names;

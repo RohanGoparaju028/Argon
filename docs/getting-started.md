@@ -51,6 +51,8 @@ hello-argon/
   .gitignore
   src/
     main.ar
+  cpp/
+    README.md
 ```
 
 Replace `src/main.ar` with:
@@ -79,7 +81,9 @@ argonc build --debug
 argonc emit-cpp -o program.cpp
 ```
 
-`check` validates Argon code and runs global `test` blocks, but does not verify native C++ headers or symbols. `build` creates the executable in `.argon/build/release/`; debug output goes in `.argon/build/debug/`. `run` rebuilds before executing. `emit-cpp` lets you inspect the standalone generated C++.
+`check` validates Argon code and runs global `test` blocks, but does not verify native C++ headers or symbols. `build` creates the executable in `argon-cxx/release/`; debug output goes in `argon-cxx/debug/`. `run` rebuilds before executing. `emit-cpp` lets you inspect the standalone generated C++.
+
+Use `argonc build --cxx-dir generated-cpp` to select another output folder, or set `[project] cxx_dir` in the manifest. Every project has `cpp/` for native headers and sources; [the native guide](cpp.md) explains `cpp "header";` and automatic compilation.
 
 A single file also works without a manifest:
 

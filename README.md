@@ -55,14 +55,14 @@ cd "$HOME/hello-argon"
 argonc run
 ```
 
-Edit `src/main.ar` and run again. The project contains `Argon.toml`, `.gitignore`, and `src/main.ar`. `new` requires a new directory; `argonc init` initializes an existing directory without overwriting generated files.
+Edit `src/main.ar` and run again. The project contains `Argon.toml`, `.gitignore`, `src/main.ar`, and a `cpp/` directory for native headers and implementations. `new` requires a new directory; `argonc init` initializes an existing directory without overwriting generated files.
 
 | Command | Use |
 | --- | --- |
 | `argonc check` | Check types and execute global compile-time blocks |
-| `argonc build` | Build `.argon/build/release/NAME` |
+| `argonc build` | Build `argon-cxx/release/NAME` |
 | `argonc run` | Build and run the project |
-| `argonc build --debug` | Build `.argon/build/debug/NAME` with native debug information |
+| `argonc build --debug` | Build `argon-cxx/debug/NAME` with native debug information |
 | `argonc build -o PATH` | Choose an executable output path whose parent exists |
 | `argonc emit-cpp -o program.cpp` | Export standalone generated C++ |
 | `argonc doctor` | Locate the native C++ compiler |
@@ -502,7 +502,31 @@ println("Hello, " + name);
 
 `read_line()` reads standard input. Programs using runtime input or foreign libraries are not promised identical output across runs.
 
+## Choose the build-output directory
+
+Generated C++ and default executables now go in the visible `argon-cxx/release/` directory, or `argon-cxx/debug/` with `--debug`. No new `.argon/` directory is created.
+
+```sh
+argonc new app --cxx-dir generated-cpp
+argonc build --cxx-dir generated-cpp
+argonc run --cxx-dir generated-cpp
+argonc emit-cpp --cxx-dir generated-cpp
+```
+
+`new`/`init` save the setting as `[project] cxx_dir` in `Argon.toml`, relative to the project root. Build/run/export overrides are relative to the current directory; absolute paths also work. `argonc emit-cpp` without options writes to the configured release directory. Use `--stdout` to print it or `-o FILE.cpp` to name a file explicitly.
+
 ## Use C++ libraries
+
+Every project has a `cpp/` folder. Copy headers and implementation files there. `argonc` recursively compiles `.cpp`, `.cc`, `.cxx`, `.c++`, and `.c` files automatically; C files compile separately as C11. Use one quoted syntax for local and standard headers:
+
+```text
+cpp "demo.hpp";          // cpp/demo.hpp
+cpp "vendor/math.hpp";   // cpp/vendor/math.hpp
+cpp "cmath";             // Native compiler's standard include paths
+```
+
+Lookup searches `cpp/` first, configured include directories next, and standard include paths last. Header-only libraries need no separate implementation file. Function bindings are still explicit: inclusion does not automatically expose every C++ type or function.
+
 
 Create the complete native example:
 
@@ -515,6 +539,8 @@ argonc run
 It prints `42`. The generated `src/main.ar` declares and calls the native function:
 
 ```text
+cpp "demo.hpp";
+
 extern cpp fn twice(value: i32) -> i32 = "demo::twice";
 
 fn main() -> i32 {
@@ -523,20 +549,14 @@ fn main() -> i32 {
 }
 ```
 
-The corresponding `Argon.toml` configures the native files:
+The corresponding `Argon.toml` needs no native file list for this layout:
 
 ```toml
 [project]
 schema = 1
 name = "native-demo"
 entry = "src/main.ar"
-
-[cpp]
-headers = ["demo.hpp"]
-sources = ["native/demo.cpp"]
-include_dirs = ["native"]
-library_dirs = []
-libraries = []
+cxx_dir = "argon-cxx"
 ```
 
 Bindings currently accept numeric/Boolean arguments and numeric/Boolean/void results. Use `std::int32_t`, `std::int64_t`, `double`, and `bool` for exact native signatures. `argonc check` checks the Argon declaration; native compilation checks the C++ symbol and signature.
@@ -597,6 +617,7 @@ ctest --test-dir build --output-on-failure
 ./build/argonc run examples/linked_nodes.ar
 ./build/argonc run examples/collections.ar
 ./build/argonc run examples/shared_collections.ar
+./build/argonc run examples/native_files/src/main.ar
 ```
 
 CTest includes additional editor/debugger tests when their tools are installed. See [the examples index](examples/README.md).

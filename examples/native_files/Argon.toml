@@ -1,0 +1,5 @@
+[project]
+schema = 1
+name = "native-files"
+entry = "src/main.ar"
+cxx_dir = "argon-cxx"

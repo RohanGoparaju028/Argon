@@ -44,13 +44,14 @@ Project open_project(const fs::path& start,bool required){
             if(key=="schema"){if(value!="1")throw Error("supported manifest schema is 1",tok);schema=true;}
             else if(key=="name"){p.name=strings(value,false,tok)[0];if(!valid_name(p.name))throw Error("project name must use 1-64 letters, digits, underscores, or hyphens",tok);}
             else if(key=="entry"){p.entry=strings(value,false,tok)[0];}
+            else if(key=="cxx_dir"){p.cxx_dir=strings(value,false,tok)[0];if(p.cxx_dir.empty())throw Error("cxx_dir must not be empty",tok);}
             else throw Error("unknown project key '"+key+"'",tok);
         }else if(section=="cpp"){
             auto items=strings(value,true,tok);
             for(const auto& item:items){
-                if(key=="headers"){if(!std::regex_match(item,std::regex("[A-Za-z0-9_][A-Za-z0-9_./+-]*"))||item.find("..")!=std::string::npos)throw Error("invalid C++ header name",tok);p.options.headers.push_back(item);}
+                if(key=="headers"){if(!valid_cpp_header(item))throw Error("invalid C++ header name",tok);p.options.headers.push_back(item);}
                 else if(key=="libraries"){if(!std::regex_match(item,std::regex("[A-Za-z0-9_][A-Za-z0-9_.+-]*")))throw Error("invalid library name",tok);p.options.libraries.push_back(item);}
-                else if(key=="sources"){auto path=project_path(p,item,false);auto ext=path.extension().string();if(ext!=".cpp"&&ext!=".cc"&&ext!=".cxx")throw Error("C++ sources must use .cpp, .cc, or .cxx",tok);p.options.sources.push_back(path);}
+                else if(key=="sources"){auto path=project_path(p,item,false);auto ext=path.extension().string();if(ext!=".cpp"&&ext!=".cc"&&ext!=".cxx"&&ext!=".c++"&&ext!=".c")throw Error("native sources must use .cpp, .cc, .cxx, .c++, or .c",tok);p.options.sources.push_back(path);}
                 else if(key=="include_dirs")p.options.include_dirs.push_back(project_path(p,item,true));
                 else if(key=="library_dirs")p.options.library_dirs.push_back(project_path(p,item,true));
                 else throw Error("unknown C++ key '"+key+"'",tok);
@@ -60,21 +61,69 @@ Project open_project(const fs::path& start,bool required){
     }
     if(!schema||p.name.empty())throw Error("Argon.toml requires [project] schema = 1 and name");
     p.entry=project_path(p,p.entry.string(),false);
-    if(p.entry.extension()!=".ar"&&p.entry.extension()!=".fe")throw Error("entry must use .ar (or legacy .fe)");return p;
+    if(p.entry.extension()!=".ar"&&p.entry.extension()!=".fe")throw Error("entry must use .ar (or legacy .fe)");prepare_project(p);return p;
 }
-void create_project(const fs::path& directory,bool fresh,bool cpp){
+void prepare_project(Project& p){
+    if(p.cxx_dir.empty())p.cxx_dir="argon-cxx";
+    p.cxx_dir=fs::absolute(p.root/p.cxx_dir).lexically_normal();
+    auto native=p.root/"cpp";
+    if(fs::exists(native)){
+        if(!fs::is_directory(native)||fs::is_symlink(fs::symlink_status(native)))throw Error("cpp must be a local directory");
+        p.options.include_dirs.insert(p.options.include_dirs.begin(),fs::canonical(native));
+        for(const auto& item:fs::recursive_directory_iterator(native)){
+            if(fs::is_symlink(item.symlink_status()))throw Error("cpp must not contain symbolic links: "+item.path().string());
+            if(!item.is_regular_file())continue;
+            auto ext=item.path().extension().string();
+            if(ext==".cpp"||ext==".cc"||ext==".cxx"||ext==".c++"||ext==".c")p.options.sources.push_back(fs::canonical(item.path()));
+        }
+    }
+    std::sort(p.options.sources.begin(),p.options.sources.end());
+    p.options.sources.erase(std::unique(p.options.sources.begin(),p.options.sources.end()),p.options.sources.end());
+}
+fs::path build_directory(const Project& p,bool debug){
+    auto base=fs::absolute(p.root/(p.cxx_dir.empty()?fs::path("argon-cxx"):p.cxx_dir)).lexically_normal();
+    if(base.string().find('\0')!=std::string::npos)throw Error("invalid C++ output directory");
+    auto directory=base/(debug?"debug":"release");
+    if(fs::is_symlink(fs::symlink_status(base))||fs::is_symlink(fs::symlink_status(directory)))throw Error("C++ output directory cannot be a symbolic link");
+    if(fs::weakly_canonical(base)==fs::weakly_canonical(p.root)||within(p.root/"src",base)||within(p.root/"cpp",base))
+        throw Error("C++ output directory must be separate from the project root, src, and cpp");
+    for(const auto& file:p.options.sources)if(within(base,file))throw Error("C++ output directory contains native source files");
+    return directory;
+}
+void validate_output(const Compiled& program,const Project& p,const fs::path& output){
+    if(fs::is_symlink(fs::symlink_status(output)))throw Error("output cannot be a symbolic link");
+    if(fs::exists(output)&&(!fs::is_regular_file(output)||fs::hard_link_count(output)>1))throw Error("output must be a regular file without hard-link aliases");
+    auto protected_files=program.sources;
+    protected_files.insert(protected_files.end(),p.options.sources.begin(),p.options.sources.end());
+    protected_files.push_back(p.root/"Argon.toml");
+    for(const auto& file:protected_files){
+        if(fs::weakly_canonical(file)==fs::weakly_canonical(output)||(fs::exists(file)&&fs::exists(output)&&fs::equivalent(file,output)))throw Error("output must not overwrite source files");
+    }
+    if(within(p.root/"cpp",output))throw Error("output must not overwrite files in cpp");
+}
+void create_project(const fs::path& directory,bool fresh,bool cpp,const fs::path& cxx_dir){
     auto root=fs::weakly_canonical(fs::absolute(directory));if(fresh&&fs::exists(fs::symlink_status(root)))throw Error("destination exists; use argonc init inside an existing directory");if(fs::exists(root)&&!fs::is_directory(root))throw Error("destination is not a directory");auto name=project_name(root);
+    Project config;config.root=root;config.entry=root/"src/main.ar";config.cxx_dir=cxx_dir;
+    // Validate the requested layout before creating any files.
+    build_directory(config,false);
     std::map<std::string,std::string> files;
     files["Argon.toml"]="[project]\nschema = 1\nname = "+quote(name)+"\nentry = \"src/main.ar\"\n";
+    files["Argon.toml"]+="cxx_dir = "+quote(cxx_dir.generic_string())+"\n";
+    files["cpp/README.md"]="# Native files\n\nCopy library headers and implementations here. In Argon, use cpp \"name.hpp\"; and extern cpp fn bindings.\nAll .cpp, .cc, .cxx, .c++, and .c files in this directory are compiled recursively.\nDo not copy library examples/tests with their own main function here.\nConfigure additional libraries and include directories in [cpp] in Argon.toml.\n";
     files["src/main.ar"]="test {\n    const answer: i32 = 6 * 7;\n    assert(answer == 42);\n}\n\nfn main() -> i32 {\n    println(\"Hello from Argon!\");\n    println(answer);\n    return 0;\n}\n";
-    if(cpp){files["Argon.toml"]+="\n[cpp]\nheaders = [\"demo.hpp\"]\nsources = [\"native/demo.cpp\"]\ninclude_dirs = [\"native\"]\n";
-        files["native/demo.hpp"]="#pragma once\n#include <cstdint>\nnamespace demo { std::int32_t twice(std::int32_t value); }\n";
-        files["native/demo.cpp"]="#include \"demo.hpp\"\nstd::int32_t demo::twice(std::int32_t value) { return value * 2; }\n";
-        files["src/main.ar"]="extern cpp fn twice(value: i32) -> i32 = \"demo::twice\";\n\nfn main() -> i32 {\n    unsafe {\n        println(twice(21));\n    }\n    return 0;\n}\n";
+    if(cpp){
+        files["cpp/demo.hpp"]="#pragma once\n#include <cstdint>\nnamespace demo { std::int32_t twice(std::int32_t value); }\n";
+        files["cpp/demo.cpp"]="#include \"demo.hpp\"\nstd::int32_t demo::twice(std::int32_t value) { return value * 2; }\n";
+        files["src/main.ar"]="cpp \"demo.hpp\";\n\nextern cpp fn twice(value: i32) -> i32 = \"demo::twice\";\n\nfn main() -> i32 {\n    unsafe { println(twice(21)); }\n    return 0;\n}\n";
     }
     for(const auto& file:files){auto path=root/file.first;if(!within(root,path)||fs::exists(fs::symlink_status(path)))throw Error("refusing to overwrite "+path.string());auto parent=path.parent_path();if(fs::exists(parent)&&!fs::is_directory(parent))throw Error("project path is not a directory: "+parent.string());}
     for(const auto& file:files){auto path=root/file.first;fs::create_directories(path.parent_path());write_file(path,file.second);}
-    if(!fs::exists(fs::symlink_status(root/".gitignore")))write_file(root/".gitignore",".argon/\nbuild/\n");
+    if(!fs::exists(fs::symlink_status(root/".gitignore"))){
+        std::string ignore="argon-cxx/\nbuild/\n";
+        auto output=fs::absolute(root/cxx_dir);
+        if(cxx_dir!="argon-cxx"&&within(root,output))ignore+="/"+fs::relative(output,root).generic_string()+"/\n";
+        write_file(root/".gitignore",ignore);
+    }
     std::cout<<"Created "<<name<<" in "<<root.string()<<"\nRun argonc run from that directory.\n";
 }
 fs::path find_cpp_compiler(){
@@ -109,12 +158,13 @@ int execute_process(const std::vector<std::string>& args){
 #endif
 }
 int build_native(const Compiled& program,const Project& project,const fs::path& requested,bool debug){
-    auto output=fs::absolute(requested);auto directory=project.root/".argon"/"build"/(debug?"debug":"release");
-    if(!within(project.root,directory))throw Error(".argon build directory must stay inside the project");
+    auto output=fs::absolute(requested);auto directory=build_directory(project,debug);
+    validate_output(program,project,output);
+    validate_output(program,project,directory/"program.cpp");
     if(fs::is_symlink(fs::symlink_status(output)))throw Error("output cannot be a symbolic link");
     if(fs::exists(output)&&(!fs::is_regular_file(output)||fs::hard_link_count(output)>1))throw Error("output must be a regular file without hard-link aliases");
     for(const auto& source:program.sources)if(fs::weakly_canonical(source)==fs::weakly_canonical(output)||(fs::exists(output)&&fs::equivalent(source,output)))throw Error("output must not overwrite source files");
-    static const std::set<std::string> source_extensions={".ar",".fe",".cpp",".cc",".cxx",".h",".hpp"};if(source_extensions.count(output.extension().string()))throw Error("executable output must not use a source-file extension");
+    static const std::set<std::string> source_extensions={".ar",".fe",".cpp",".cc",".cxx",".c++",".c",".h",".hpp"};if(source_extensions.count(output.extension().string()))throw Error("executable output must not use a source-file extension");
     if(!fs::is_directory(output.parent_path()))throw Error("output directory does not exist");fs::create_directories(directory);
     static std::atomic<unsigned> sequence{0};fs::path stage;
     for(int i=0;i<100;++i){auto nonce=std::chrono::steady_clock::now().time_since_epoch().count();stage=directory/("stage-"+std::to_string(nonce)+"-"+std::to_string(sequence++));if(fs::create_directory(stage))break;stage.clear();}if(stage.empty())throw Error("cannot create build staging directory");
@@ -123,7 +173,31 @@ int build_native(const Compiled& program,const Project& project,const fs::path& 
 #ifdef _WIN32
     binary+=".exe";
 #endif
-    write_file(source,program.cpp);std::vector<std::string> command={find_cpp_compiler().string(),"-std=c++17",debug?"-O0":"-O2","-fno-fast-math"};if(debug)command.push_back("-g");for(const auto& inc:project.options.include_dirs){command.push_back("-I");command.push_back(inc.string());}command.push_back(source.string());for(const auto& file:project.options.sources)command.push_back(file.string());for(const auto& lib:project.options.library_dirs){command.push_back("-L");command.push_back(lib.string());}for(const auto& lib:project.options.libraries)command.push_back("-l"+lib);command.push_back("-o");command.push_back(binary.string());
+    write_file(source,program.cpp);
+    auto compiler=find_cpp_compiler().string();
+    std::vector<std::string> includes;
+    for(const auto& inc:project.options.include_dirs){includes.push_back("-I");includes.push_back(inc.string());}
+    std::vector<std::string> objects;
+    for(const auto& file:project.options.sources)if(file.extension()==".c"){
+        auto object=stage/("native-"+std::to_string(objects.size())+".o");
+        std::vector<std::string> command={compiler,"-x","c","-std=c11",debug?"-O0":"-O2","-fno-fast-math"};
+        if(debug)command.push_back("-g");
+        command.insert(command.end(),includes.begin(),includes.end());
+        command.insert(command.end(),{"-c",file.string(),"-o",object.string()});
+        int status=execute_process(command);if(status!=0)return status;
+        objects.push_back(object.string());
+    }
+    std::vector<std::string> command={compiler,"-std=c++17",debug?"-O0":"-O2","-fno-fast-math"};
+    if(debug)command.push_back("-g");
+    command.insert(command.end(),includes.begin(),includes.end());
+    command.push_back(source.string());
+    for(const auto& file:project.options.sources)if(file.extension()!=".c"){
+        command.insert(command.end(),{"-x","c++",file.string(),"-x","none"});
+    }
+    command.insert(command.end(),objects.begin(),objects.end());
+    for(const auto& lib:project.options.library_dirs){command.push_back("-L");command.push_back(lib.string());}
+    for(const auto& lib:project.options.libraries)command.push_back("-l"+lib);
+    command.insert(command.end(),{"-o",binary.string()});
     int status=execute_process(command);if(status!=0)return status;
     auto generated=directory/"program.cpp";if(fs::is_symlink(fs::symlink_status(generated))||(fs::exists(generated)&&fs::hard_link_count(generated)>1))throw Error("generated output has filesystem aliases");fs::copy_file(source,generated,fs::copy_options::overwrite_existing);
 #ifdef __APPLE__

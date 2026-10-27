@@ -2,6 +2,7 @@
 /build-*/
 /.build/
 .argon/
+argon-cxx/
 *.swp
 .DS_Store
 

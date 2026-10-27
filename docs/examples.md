@@ -8,6 +8,7 @@ From the repository root, run `./build/argonc run examples/NAME.ar` (or use the 
 
 | File | Demonstrates |
 | --- | --- |
+| [native_files/](https://github.com/RohanGoparaju028/Argon/tree/main/examples/native_files) | Complete project with local headers, C/C++ implementations, a header-only function, and a standard-library call |
 | [tour.ar](https://github.com/RohanGoparaju028/Argon/blob/main/examples/tour.ar) | Compile-time blocks, tagged enums, matches, structs, loops, arrays, switches |
 | [pointers.ar](https://github.com/RohanGoparaju028/Argon/blob/main/examples/pointers.ar) | Owning pointers, shared mutation, weak upgrade, expiry, and checked access |
 | [family.ar](https://github.com/RohanGoparaju028/Argon/blob/main/examples/family.ar) | Reference-counted classes with a weak parent link to avoid cycles |

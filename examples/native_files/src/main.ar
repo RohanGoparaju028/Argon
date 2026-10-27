@@ -1,0 +1,19 @@
+cpp "demo.hpp";
+cpp "inline_math.hpp";
+cpp "c_value.h";
+cpp "cmath";
+
+extern cpp fn twice(value: i32) -> i32 = "demo::twice";
+extern cpp fn triple(value: i32) -> i32 = "triple";
+extern cpp fn c_value() -> i32 = "c_value";
+extern cpp fn square_root(value: f64) -> f64 = "std::sqrt";
+
+fn main() -> i32 {
+    unsafe {
+        println(twice(21));
+        println(triple(14));
+        println(c_value());
+        println(square_root(81.0));
+    }
+    return 0;
+}

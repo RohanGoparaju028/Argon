@@ -10,6 +10,8 @@ See [what Argon supports today](features.md) for the complete feature inventory 
 
 The [keyword reference](keywords.md) lists all reserved words and their actual implementation status. `in` is reserved but has no implemented syntax.
 
+Build-from-source instructions for macOS, Linux, and Windows are in the [installation guide](installation.md).
+
 ## Implementation status
 
 | Feature | Status and boundary |

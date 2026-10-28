@@ -2,7 +2,7 @@
 
 **A native language for small-to-medium projects that need C++ libraries without managing a separate C++ build system.**
 
-[Documentation](https://rohangoparaju028.github.io/Argon/) · [Implemented features](docs/features.md) · [Keyword reference](docs/keywords.md) · [Language reference](docs/language.md) · [Current status](docs/status.md)
+[Documentation](https://rohangoparaju028.github.io/Argon/) · [Installation](docs/installation.md) · [Implemented features](docs/features.md) · [Keyword reference](docs/keywords.md) · [Language reference](docs/language.md) · [Current status](docs/status.md)
 
 ## Why Argon exists
 
@@ -24,26 +24,32 @@ The long-term goal is **start with Argon's simple workflow, then move to maintai
 
 Compiling through C++ does not make every error behave like ordinary C++. Argon reports its own syntax/type errors and adds checked arithmetic, pointer access, and collection access. Native compilation/linking errors come from the C++ toolchain. Foreign C++ code retains its own risks and behavior.
 
-## Build the compiler
+## Installation
 
-You need Git, CMake 3.16+, and a C++17 compiler. Clang and GCC are the supported native backends.
+Argon currently installs from source using Git, CMake 3.16+, and a C++17 compiler. The [complete installation guide](docs/installation.md) covers prerequisites, building, installation, permanent PATH setup, updates, and troubleshooting for:
+
+| Operating system | Installation instructions |
+| --- | --- |
+| macOS | [Apple Command Line Tools + CMake](docs/installation.md#macos) |
+| Linux | [Ubuntu/Debian, Fedora, and Arch Linux](docs/installation.md#linux) |
+| Windows | [MSYS2 UCRT64 + MinGW-w64 GCC](docs/installation.md#windows) |
+
+On macOS/Linux, once the prerequisites are installed:
 
 ```sh
 git clone https://github.com/RohanGoparaju028/Argon.git
 cd Argon
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel 2
-./build/argonc --version
-```
-
-On macOS/Linux, make it available in the current shell:
-
-```sh
-export PATH="$PWD/build:$PATH"
+cmake -S . -B build-install -DCMAKE_BUILD_TYPE=Release
+cmake --build build-install --parallel 2
+cmake --install build-install --prefix "$HOME/.local"
+export PATH="$HOME/.local/bin:$PATH"
+argonc --version
 argonc doctor
 ```
 
-For a permanent installation, use `cmake --install build --prefix /your/prefix` and add `/your/prefix/bin` to PATH. On Windows, use a MinGW-w64 GCC or Clang environment and `build/argonc.exe`. No Python dependency is required by the compiler or build tool.
+Add the PATH export to your shell configuration to persist it. Windows users should follow the dedicated UCRT64 steps, including compiler selection and runtime DLL setup. Keep the C++ compiler installed: `argonc` uses it for application builds. Python and Node.js are not required by the compiler.
+
+For development without installation, the compiler can also be built into `build/` and run as `./build/argonc`; the examples later in this README use that development path.
 
 ## Start a project anywhere
 

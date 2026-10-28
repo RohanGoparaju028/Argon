@@ -12,7 +12,7 @@ Argon is an experimental programming language for small-to-medium projects that 
 
 See **[what Argon supports today](features.md)** for the feature inventory, or **[the complete keyword reference](keywords.md)** for every implemented keyword, its rules, and runnable examples.
 
-1. [Install the compiler and create a project](getting-started.md).
+1. [Install on macOS, Linux, or Windows](installation.md), then [create your first project](getting-started.md).
 2. [Learn the keywords](keywords.md), then consult the [language reference](language.md) for detailed semantics.
 3. [Understand reference counting](memory.md), owning pointers, weak pointers, and collections.
 4. [Call a C++ function](cpp.md) through an explicit binding.

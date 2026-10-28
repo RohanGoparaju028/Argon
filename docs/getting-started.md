@@ -4,32 +4,22 @@ title: Getting started
 
 # Getting started
 
-You need Git, CMake 3.16 or newer, and a C++17 compiler. Clang and GCC are the supported native backends. There is no prebuilt compiler distribution documented for this version.
+## Install the compiler first
 
-## Build the compiler
+Follow the [installation guide](installation.md) for your operating system:
 
-```sh
-git clone https://github.com/RohanGoparaju028/Argon.git
-cd Argon
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel 2
-./build/argonc --version
-```
+- [macOS](installation.md#macos)
+- [Linux: Ubuntu/Debian, Fedora, or Arch](installation.md#linux)
+- [Windows: MSYS2 UCRT64](installation.md#windows)
 
-The compiler reports `Argon 0.1.0`. CMake builds the compiler itself; your Argon applications use `argonc` directly.
-
-On Windows, run these commands in a MinGW-w64 GCC or Clang environment and use `build/argonc.exe`. Native builds require that compiler and its runtime libraries to be available in the environment.
-
-## Make argonc available anywhere
-
-On macOS or Linux, run this from the cloned repository:
+It covers prerequisites, building from source, installing `argonc`, and permanent PATH setup. Then verify in your configured terminal:
 
 ```sh
-export PATH="$PWD/build:$PATH"
+argonc --version
 argonc doctor
 ```
 
-This updates the current shell. To persist it, add an `export PATH="/absolute/path/to/Argon/build:$PATH"` line with your actual repository path to `~/.zshrc` or your shell's configuration. Alternatively, install with `cmake --install build --prefix /your/prefix` and add `/your/prefix/bin` to PATH. Windows users can add the compiler's build directory to PATH.
+The current compiler reports `Argon 0.1.0`. Keep the C++ compiler installed for native application builds. The commands below use macOS/Linux shell syntax, which also works in the Windows UCRT64 Bash terminal from the installation guide.
 
 ## Create a project outside the compiler repository
 
@@ -106,10 +96,12 @@ This scaffolds an Argon caller and a C++ header/source pair. The program prints 
 From your clone of Argon:
 
 ```sh
-ctest --test-dir build --output-on-failure
-./build/argonc run examples/tour.ar
-./build/argonc run examples/pointers.ar
-./build/argonc run examples/collections.ar
+cd build-install
+ctest --output-on-failure
+cd ..
+argonc run examples/tour.ar
+argonc run examples/pointers.ar
+argonc run examples/collections.ar
 ```
 
 CTest discovers additional editor/debug-symbol tests when their tools are installed; the test count can vary by machine. Global `test` blocks in the language are compile-time metaprograms, not a separate runtime test runner.
